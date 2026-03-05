@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IC Design 101: 5G Modem 開發全攻略</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Tech Blue & Slate with Department Accents -->
+    <!-- Application Structure Plan: 
+         1. Hero: Introduces the analogy (Building a City).
+         2. Interactive Timeline: The core of the prompt. A chronological scrollable timeline. Clicking a milestone updates a 'Department Matrix' below it, showing what HW, SW, FW, OM, CS, PM are doing and how they collaborate. This breaks down complex concurrent engineering into digestible chunks.
+         3. Effort Chart: Uses Chart.js to visualize the workload shift over time (e.g., HW peaks early, CS peaks late), reinforcing the timeline concepts.
+         4. Jargon Decoder: A searchable, categorized grid explaining HC roles, product lines, and technical abbreviations using plain language. 
+         This structure moves from "Process" to "People/Tools" to "Language", ensuring systemic learning. -->
+    <!-- Visualization & Content Choices: 
+         - Milestone Matrix: Goal: Compare department roles. Viz: Interactive text grid. Interaction: Click timeline to update. Justification: Best for reading detailed concurrent actions.
+         - Effort Trend: Goal: Show change over time. Viz: Stacked Line Chart (Chart.js). Interaction: Hover for values. Justification: Visually proves that IC design is a relay race, not a solo sprint. NO SVG used.
+         - Glossary: Goal: Organize info. Viz: Searchable Card Grid. Interaction: Type to filter. Justification: Quick reference for dense jargon. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. Relying on Unicode, CSS shapes, and Chart.js canvas. -->
+
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+            min-height: 300px;
+        }
+        /* Custom scrollbar for timeline */
+        .timeline-scroll::-webkit-scrollbar { height: 8px; }
+        .timeline-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .timeline-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .timeline-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .dept-hw { border-left-color: #f97316; } /* Orange */
+        .dept-fw { border-left-color: #8b5cf6; } /* Purple */
+        .dept-sw { border-left-color: #10b981; } /* Green */
+        .dept-om { border-left-color: #eab308; } /* Yellow */
+        .dept-cs { border-left-color: #ef4444; } /* Red */
+        .dept-pm { border-left-color: #3b82f6; } /* Blue */
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <!-- Header / Hero -->
+    <header class="bg-slate-900 text-white pt-16 pb-20 px-4 shadow-xl relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(#ffffff 1px, transparent 1px); background-size: 20px 20px;"></div>
+        <div class="max-w-6xl mx-auto relative z-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight">IC Design 101: 系統性學習架構</h1>
+            <p class="text-xl md:text-2xl text-slate-300 mb-8 max-w-3xl">以通訊晶片 (Modem) 為例，從概念到量產的奇幻旅程。</p>
+            
+            <div class="bg-slate-800/80 p-6 rounded-xl border border-slate-700 backdrop-blur-sm">
+                <h2 class="text-lg font-bold text-blue-400 mb-2">💡 核心概念：蓋一棟高科技智能大樓 (The Analogy)</h2>
+                <p class="text-slate-300 leading-relaxed text-sm md:text-base">
+                    設計一顆 Modem 就像蓋一棟超複雜的智能大樓。
+                    <span class="text-blue-300">PM (專案管理)</span> 是總建商，負責盯進度與預算；
+                    <span class="text-orange-400">Hardware (硬體)</span> 是土木架構師，負責畫鋼筋水泥藍圖；
+                    <span class="text-purple-400">Firmware (韌體)</span> 是機電工程師，控制電梯與空調底層；
+                    <span class="text-green-400">Software (軟體)</span> 是室內設計與智能管家系統，負責與外界互動；
+                    <span class="text-yellow-400">Operation (營運)</span> 是採購與營造廠，負責把圖紙變成實體物；
+                    <span class="text-red-400">Customer Support (客服)</span> 則是代銷與物業，負責交屋給客戶並處理客訴。
+                </p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-12 space-y-20">
+
+        <!-- Section 1: Milestones -->
+        <section id="milestones">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 border-b-4 border-blue-500 inline-block pb-2">1. 晶片開發生命週期 (Milestones)</h2>
+                <p class="text-slate-600">這是 IC 設計的心臟地帶。點擊下方時間軸的各個里程碑，了解在該階段各部門正在執行什麼任務，以及他們如何互相協作。</p>
+            </div>
+
+            <!-- Interactive Timeline -->
+            <div class="bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+                <div class="overflow-x-auto pb-4 timeline-scroll mb-8">
+                    <div class="flex space-x-2 min-w-max px-2" id="timeline-container">
+                        <!-- Buttons injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div id="milestone-detail" class="bg-slate-50 rounded-xl p-6 border border-slate-200 min-h-[400px]">
+                    <div class="text-center text-slate-500 mt-20">
+                        <span class="text-4xl block mb-4">👆</span>
+                        請點擊上方時間軸的里程碑以查看詳細協作流程
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Effort Chart -->
+        <section id="effort-chart">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 border-b-4 border-blue-500 inline-block pb-2">2. 跨部門協作趨勢圖</h2>
+                <p class="text-slate-600">IC 設計是一場接力賽。下圖展示了不同部門在各個里程碑的「火力集中度」。你可以看到硬體在前期最忙，而軟體與客服在拿到實體晶片後火力全開。</p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-md p-6 border border-slate-200">
+                <div class="chart-container">
+                    <canvas id="effortCanvas"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Jargon Decoder -->
+        <section id="glossary">
+            <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900 mb-4 border-b-4 border-blue-500 inline-block pb-2">3. 產業黑話解碼器 (Jargon Decoder)</h2>
+                    <p class="text-slate-600">將您看到的各種縮寫、職位 (RAS HC)、與產品線 (Productline) 分門別類，用白話文解釋。</p>
+                </div>
+                <div class="w-full md:w-72">
+                    <input type="text" id="searchInput" placeholder="搜尋關鍵字 (例: TO, DSP, DVT)..." class="w-full px-4 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-6" id="filter-buttons">
+                <button class="px-4 py-1 rounded-full text-sm font-medium bg-blue-600 text-white transition-colors" data-filter="all">全部</button>
+                <button class="px-4 py-1 rounded-full text-sm font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors" data-filter="role">團隊職能 (RAS HC)</button>
+                <button class="px-4 py-1 rounded-full text-sm font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors" data-filter="product">產品應用 (Productline)</button>
+                <button class="px-4 py-1 rounded-full text-sm font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors" data-filter="spec">規格與技術 (Specs)</button>
+                <button class="px-4 py-1 rounded-full text-sm font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors" data-filter="process">流程與術語 (Process)</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="glossary-grid">
+                <!-- Cards injected by JS -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center mt-20">
+        <p>© 2024 IC Design Learning Platform. Designed for system-level understanding.</p>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- DATA: Milestones ---
+        const milestonesData = [
+            {
+                id: "MRD", name: "MRD", fullName: "Market Requirement Document",
+                desc: "市場需求文件。決定我們『要賣什麼』。這是一切的起點。",
+                pm: "【主導】收集市場趨勢、競爭者分析，定義產品規格與目標售價。",
+                hw: "【評估】初步看一眼 PM 開的規格，評估硬體架構大致長怎樣。",
+                fw: "【評估】思考這些硬體功能需要什麼樣的底層控制機制。",
+                sw: "【評估】思考上層應用程式需要哪些 API 介面。",
+                om: "【準備】初步了解未來可能的產能需求。",
+                cs: "【回饋】提供上一代產品客戶抱怨的痛點，確保新產品能解決。"
+            },
+            {
+                id: "TFE", name: "TFE", fullName: "Technology Feasibility Evaluation",
+                desc: "技術可行性評估。大家坐下來算算看『我們做得出來嗎？』",
+                pm: "協調各技術部門，確保大家對技術挑戰有共識，並評估時程風險。",
+                hw: "【主導】評估晶片面積(Die size)、功耗(Power)、效能(Performance)，決定要用台積電幾奈米製程。",
+                fw: "評估DSP(數位訊號處理器)算力是否足夠應付新的通訊協定(如 1024QAM)。",
+                sw: "評估現有軟體架構是否需要大改版以支援新硬體。",
+                om: "確認選定的代工廠(Foundry)製程技術是否成熟。",
+                cs: "旁聽，了解未來產品的技術亮點與潛在限制。"
+            },
+            {
+                id: "PC", name: "PC0/PC1", fullName: "Product Council",
+                desc: "產品委員會審查。高層大拜拜，決定『要不要投錢做』。",
+                pm: "【主導】拿著 MRD 和 TFE 的結果，向高層(C-level)簡報投資報酬率(ROI)與開發計畫，爭取預算 (Headcount & 錢)。",
+                hw: "準備技術簡報，背書硬體設計的成本與效能預估。",
+                fw: "背書韌體開發人力需求與時程。",
+                sw: "背書軟體開發人力需求與時程。",
+                om: "報告晶圓代工與封裝測試的成本預估。",
+                cs: "報告潛在客戶的採用意願(Design-in 預測)。"
+            },
+            {
+                id: "KO", name: "KO", fullName: "Kick Off",
+                desc: "專案正式啟動大會。拿到錢了，大家開工！",
+                pm: "【主導】發佈正式的專案時程表，明確定義各部門交接點(Checkpoints)。",
+                hw: "正式開始寫 RTL (硬體描述語言)，畫電路圖。",
+                fw: "開始建立開發環境，撰寫底層驅動程式碼。",
+                sw: "開始開發通訊協定軟體與作業系統整合。",
+                om: "開始與供應商(台積電、日月光等)洽談初期產能規劃。",
+                cs: "開始向重要客戶(Alpha customers)透露產品藍圖(Roadmap)。"
+            },
+            {
+                id: "TDI_FDI", name: "TDI / FDI", fullName: "Trial Data In / Final Data In",
+                desc: "測試/最終資料匯入。硬體設計凍結前夕，確保沒有 Bug。",
+                pm: "盯緊 HW 設計進度，確保所有 Bug 都在時程內解完。若有大 Bug 需要 ECO (工程變更)，PM 要評估時程衝擊。",
+                hw: "【主導】日以繼夜跑模擬驗證(Simulation)，修復電路邏輯錯誤。FDI 代表硬體邏輯設計正式凍結(Freeze)。",
+                fw: "在虛擬平台(Cosim / FPGA)上，用軟體跑模擬的硬體，提早驗證韌體邏輯 (非常重要，這叫 Shift-left)。",
+                sw: "同樣在虛擬平台上測試上層軟體與韌體的溝通。",
+                om: "確認晶片光罩(Mask)的製作規格與排程。",
+                cs: "開始準備客戶端需要的技術文件草稿。"
+            },
+            {
+                id: "SO_TO", name: "SO / TO", fullName: "Spec Out / Tape Out",
+                desc: "Tape Out (流片)。硬體設計圖正式送交晶圓廠製造。IC設計最神聖的時刻！",
+                pm: "舉辦慶功宴(吃雞排/披薩)。確保 Tape Out 流程符合品質規範 (SQC)。",
+                hw: "【主導】將電路圖轉成幾何圖形檔案(GDSII)，按鈕送出。之後幾個月硬體人可以稍微喘口氣。",
+                fw: "無法再改硬體了！若發現硬體有錯，要想辦法用韌體繞道解決 (Workaround)。",
+                sw: "繼續在模擬環境中完善軟體功能。",
+                om: "【接手】緊盯台積電的製造進度。",
+                cs: "向客戶更新最新進度，準備迎接第一批樣品。"
+            },
+            {
+                id: "PG", name: "PG", fullName: "Pattern Generation",
+                desc: "光罩製作。晶圓廠將設計圖製作成生產用的光罩。",
+                pm: "追蹤光罩製作進度與費用。",
+                hw: "準備「Bring up (點亮晶片)」的實驗室測試計畫。",
+                fw: "準備 Bring up 需要的初始開機程式碼 (Bootloader)。",
+                sw: "準備 Bring up 用的基本測試軟體。",
+                om: "【主導】監控光罩廠進度，確保光罩無瑕疵。",
+                cs: "持續客戶關係維護。"
+            },
+            {
+                id: "SB", name: "SB", fullName: "Sample Back",
+                desc: "首批樣品回來了！真正的戰爭開始。",
+                pm: "每天開 War Room (戰情室) 會議，緊盯晶片點亮進度。這時壓力極大。",
+                hw: "【主導 Bring up】拿到實體晶片，通電！量測電壓、時脈，確保晶片活著且基本功能正常。",
+                fw: "【主導 Bring up】將程式碼燒進實體晶片，看系統能不能順利開機，並除錯 (Triage)。",
+                sw: "確認作業系統能跑在真實晶片上。",
+                om: "安排後續封裝測試(SLT)的機台與載板。",
+                cs: "等待內部測試初步結果，準備跟客戶報告。"
+            },
+            {
+                id: "IMP", name: "IMP", fullName: "Internal Mass Production",
+                desc: "內部試產。測試晶片的可製造性與良率。",
+                pm: "檢視內部測試報告(DVT, HQA)，決定是否夠穩定可以送交客戶。",
+                hw: "【主導】進行極端環境測試(高低溫、電壓波動)，確保硬體強健度 (DVT)。",
+                fw: "修復在真實硬體上才發現的各種奇葩 Bug。",
+                sw: "進行壓力測試與效能優化。",
+                om: "【主導】分析良率(Yield rate)，與晶圓廠討論改善方案。建立測試機台程式(ATE)。",
+                cs: "確認送樣給客戶的排程與數量。"
+            },
+            {
+                id: "ES", name: "ES", fullName: "Engineering Sample",
+                desc: "工程樣品。送交給早期核心客戶進行他們自己的產品開發。",
+                pm: "處理客戶提出的新需求 (CR - Customer Request)，評估是否要在下一版改。",
+                hw: "協助客戶解決硬體整合問題 (例如：天線干擾)。",
+                fw: "根據客戶現場實測 (Field Trial) 結果快速發布更新版韌體。",
+                sw: "協助客戶將我們的 Modem 整合進他們的系統 (SOC AP platform Integration)。",
+                om: "開始準備放量生產的物料。",
+                cs: "【主導】第一線面對客戶抱怨，將問題分類 (Triage) 並帶回廠內給 RD 解。"
+            },
+            {
+                id: "CS_CMP", name: "CS / CMP", fullName: "Customer Sample / Customer MP",
+                desc: "客戶樣品 / 客戶端量產。產品正式上市！",
+                pm: "結案報告，計算實際利潤，準備啟動下一代產品 (N+1)。",
+                hw: "處理極少數的客訴退貨分析 (RMA)。",
+                fw: "維護階段，發布小幅度優化更新。",
+                sw: "維護階段，確保與各大電信商的相容性。",
+                om: "【主導】火力全開，確保供應鏈順暢，交期準確，持續降低生產成本。",
+                cs: "【主導】全球跑透透，支援客戶解決終端消費者遇到的各種網路連線問題。"
+            }
+        ];
+
+        // --- DATA: Glossary ---
+        const glossaryData = [
+            // RAS HC (團隊職能)
+            { term: "Cosim", type: "role", desc: "Co-simulation (軟硬體協同模擬)。在晶片做出來之前，用軟體模擬硬體行為，讓 FW/SW 工程師可以提早寫 Code 測試，不用乾等 Tape out 結束。" },
+            { term: "Chip Integration", type: "role", desc: "晶片整合。把向外買的 IP (如 ARM 核心) 和自家設計的電路模組，像拼圖一樣無縫接合在一起的團隊。" },
+            { term: "Bring up", type: "role", desc: "點亮晶片。Sample Back 後的第一關，一群人在實驗室把晶片通電，灌入初始程式，看它能不能順利「醒來」並吐出第一筆資料。非常有成就感也最爆肝的時刻。" },
+            { term: "DVT", type: "role", desc: "Design Verification Test (設計驗證測試)。用各種極端條件（超高溫、超低溫、電壓不穩）凌虐晶片，確保它不會輕易死機。" },
+            { term: "HQA", type: "role", desc: "Hardware Quality Assurance (硬體品保)。負責把關硬體品質，確保出廠的晶片符合工業標準與壽命要求。" },
+            { term: "SLT", type: "role", desc: "System Level Test (系統級測試)。不只是測單一晶片，而是把晶片放在類似真實手機的機板上，模擬使用者實際操作來抓 Bug。" },
+            { term: "SOC AP platform Integration", type: "role", desc: "平台整合。負責讓 Modem (通訊晶片) 能跟主大腦 AP (Application Processor, 例如高通 Snapdragon 或是聯發科天璣) 順暢溝通，不出錯。" },
+            
+            // Productline (產品應用)
+            { term: "Smartphone", type: "product", desc: "智慧型手機。Modem 最大、要求最高的市場，對功耗和體積極度計較。" },
+            { term: "Thin Modem", type: "product", desc: "獨立通訊晶片。只做通訊，不做運算。通常賣給蘋果(Apple)這種自己有做 AP (A系列晶片) 的客戶，外掛在旁邊。" },
+            { term: "Modem Core IP", type: "product", desc: "與 Thin Modem 相對。把通訊功能做成一個矽智財(IP)，直接包進去(Integrate) 主大腦 AP 裡面。省空間省電，例如大部分的中低階手機。" },
+            { term: "MiFi / CPE", type: "product", desc: "行動熱點 / 客戶端設備 (俗稱 5G 分享器)。把 5G 訊號轉成 Wi-Fi 給家裡或外出使用。對功耗要求沒手機高，但散熱要好。" },
+            { term: "Datacard", type: "product", desc: "數據卡。插在筆電(Chrome book)裡面的網卡模組。" },
+            { term: "Redcap", type: "product", desc: "Reduced Capability (輕量化 5G)。閹割版的 5G，速度較慢但非常省電且便宜，專攻穿戴裝置和物聯網。" },
+            { term: "Telematics / IVI / ADAS", type: "product", desc: "車載通訊 / 車載資訊娛樂 / 駕駛輔助。把 Modem 裝在車子上，要求極高的穩定性與耐用度（車規），當機可能會出人命。" },
+            { term: "IOT", type: "product", desc: "Internet of Things (物聯網)。水表、電表等，資料量小但要求電池能撐十年不用換。" },
+
+            // Specs (規格技術)
+            { term: "DSP", type: "spec", desc: "Digital Signal Processor (數位訊號處理器)。Modem 裡面的算數天才，專門處理複雜的無線電波訊號轉換方程式 (L1物理層)。" },
+            { term: "MCU", type: "spec", desc: "Microcontroller Unit (微控制器)。Modem 裡面的管家，負責控制流程、狀態機與上層通訊協定 (L2/L3)。" },
+            { term: "IOT NTN / NR NTN", type: "spec", desc: "Non-Terrestrial Network (非地面網路)。也就是「衛星通訊」。手機直接連低軌衛星，在深山海邊也有訊號。" },
+            { term: "4CC 300M", type: "spec", desc: "通訊規格。4 Carrier Aggregation (四載波聚合)，把四條不同頻段的高速公路綁在一起，總帶寬達到 300MHz，速度超快。" },
+            { term: "1024QAM", type: "spec", desc: "一種極度複雜的訊號調變技術。可以在同一個電波裡塞入更多的資料，但對訊號品質要求極高。" },
+            { term: "RX / TX / 3RX", type: "spec", desc: "Receiver(接收) / Transmitter(發送)。3RX 代表有三組接收天線線路，收訊能力更強。" },
+            { term: "MIMO", type: "spec", desc: "Multi-Input Multi-Output (多輸入多輸出)。用多根天線同時傳資料，是 4G/5G 加速的核心技術。" },
+            { term: "Modem vs AP", type: "spec", desc: "AP (Application Processor) 是 CEO，負責跑 Android 系統、打遊戲。Modem 是公關部，專門負責用天線跟基地台講話。兩者合作才能上網。" },
+
+            // Process (流程術語)
+            { term: "ECO", type: "process", desc: "Engineering Change Order (工程變更單)。發現設計有 Bug，必須在 Tape Out 前後修改設計的緊急流程。大家都很怕聽到這個字。" },
+            { term: "CR", type: "process", desc: "Customer Request (客戶需求)。客戶突然說「我想加這個功能」，PM 就要去評估這會不會讓專案時程爆炸。" },
+            { term: "SQC", type: "process", desc: "Software/Silicon Quality Control。內部品質審查會議，通常是一群資深主管狂電 RD，確保沒問題才能進入下一關。" },
+            { term: "Field Trial", type: "process", desc: "場測。工程師拿著裝有晶片的手機，坐在測試車裡全球跑透透，實際連上各地電信商的基地台測訊號。" },
+            { term: "Triage", type: "process", desc: "分類/初步診斷。系統太複雜，Bug 發生時不知道是誰的錯。Triage team 會先看 Log (日誌)，判斷是 HW, FW 還是 SW 的鍋，然後分派下去。" },
+            { term: "Validation / Integration", type: "process", desc: "驗證與整合。把各部門寫好的東西湊在一起，確認合在一起不會打架，且功能符合最初 MRD 的規定。" }
+        ];
+
+        // --- UI Logic: Interactive Timeline ---
+        const timelineContainer = document.getElementById('timeline-container');
+        const detailPanel = document.getElementById('milestone-detail');
+
+        function renderTimeline() {
+            milestonesData.forEach((ms, index) => {
+                const btn = document.createElement('button');
+                btn.className = `px-6 py-3 rounded-full font-bold whitespace-nowrap transition-all duration-300 border-2 
+                                 ${index === 0 ? 'bg-blue-600 text-white border-blue-600 shadow-lg scale-105' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600'}`;
+                btn.innerText = ms.name;
+                btn.onclick = () => selectMilestone(ms, btn);
+                timelineContainer.appendChild(btn);
+
+                // Initialize with the first milestone (KO is a good middle ground, let's just use the first one)
+                if(index === 0) selectMilestone(ms, btn);
+            });
+        }
+
+        function selectMilestone(ms, activeBtn) {
+            // Update button styles
+            Array.from(timelineContainer.children).forEach(btn => {
+                btn.className = 'px-6 py-3 rounded-full font-bold whitespace-nowrap transition-all duration-300 border-2 bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600';
+            });
+            activeBtn.className = 'px-6 py-3 rounded-full font-bold whitespace-nowrap transition-all duration-300 border-2 bg-blue-600 text-white border-blue-600 shadow-lg scale-105';
+
+            // Center the button in the scroll area
+            activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+
+            // Update detail panel
+            detailPanel.innerHTML = `
+                <div class="mb-6 fade-in">
+                    <h3 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        ${ms.name} <span class="text-lg font-normal text-slate-500">(${ms.fullName})</span>
+                    </h3>
+                    <p class="text-slate-700 mt-2 text-lg bg-blue-50 p-3 rounded-lg border border-blue-100">${ms.desc}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 fade-in">
+                    ${createDeptCard('PM (專案管理)', ms.pm, 'dept-pm', 'text-blue-600', 'bg-blue-50')}
+                    ${createDeptCard('Hardware (硬體)', ms.hw, 'dept-hw', 'text-orange-600', 'bg-orange-50')}
+                    ${createDeptCard('Firmware (韌體)', ms.fw, 'dept-fw', 'text-purple-600', 'bg-purple-50')}
+                    ${createDeptCard('Software (軟體)', ms.sw, 'dept-sw', 'text-green-600', 'bg-green-50')}
+                    ${createDeptCard('Operation (營運)', ms.om, 'dept-om', 'text-yellow-600', 'bg-yellow-50')}
+                    ${createDeptCard('Customer Support (客服)', ms.cs, 'dept-cs', 'text-red-600', 'bg-red-50')}
+                </div>
+            `;
+        }
+
+        function createDeptCard(title, content, borderClass, textClass, bgClass) {
+            return `
+                <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-r border-t border-b border-slate-200 ${borderClass} hover:shadow-md transition-shadow">
+                    <h4 class="font-bold ${textClass} mb-2 border-b border-slate-100 pb-1">${title}</h4>
+                    <p class="text-slate-600 text-sm leading-relaxed">${content}</p>
+                </div>
+            `;
+        }
+
+        // --- UI Logic: Effort Chart (Chart.js) ---
+        function renderChart() {
+            const ctx = document.getElementById('effortCanvas').getContext('2d');
+            
+            // Estimated effort data (0-100) based on industry norms
+            const labels = milestonesData.map(m => m.name);
+            const dataHW = [30, 80, 90, 100, 100, 20, 10, 80, 60, 30, 10]; // HW peaks before Tapeout, spikes at Bringup
+            const dataFW = [10, 30, 50, 70, 80, 80, 80, 100, 90, 70, 40]; // FW builds up, peaks at Bringup/IMP
+            const dataSW = [10, 20, 30, 50, 60, 70, 80, 80, 90, 100, 80]; // SW peaks late during system integration
+            const dataOM = [10, 20, 30, 40, 50, 80, 100, 70, 80, 90, 100]; // OM peaks at Tapeout/Mask, and Mass Production
+            const dataCS = [20, 10, 10, 10, 20, 30, 30, 40, 60, 100, 100]; // CS peaks at ES and CMP (Customer facing)
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Hardware', data: dataHW, borderColor: '#f97316', backgroundColor: '#f9731633', tension: 0.4, fill: true },
+                        { label: 'Firmware', data: dataFW, borderColor: '#8b5cf6', backgroundColor: '#8b5cf633', tension: 0.4, fill: true },
+                        { label: 'Software', data: dataSW, borderColor: '#10b981', backgroundColor: '#10b98133', tension: 0.4, fill: true },
+                        { label: 'Operation', data: dataOM, borderColor: '#eab308', backgroundColor: '#eab30833', tension: 0.4, hidden: true }, // hidden by default to reduce clutter
+                        { label: 'Customer Support', data: dataCS, borderColor: '#ef4444', backgroundColor: '#ef444433', tension: 0.4, fill: true }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 110,
+                            title: { display: true, text: '投入火力 / 忙碌程度' },
+                            ticks: { display: false } // Hide numbers, just show trend
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        // --- UI Logic: Glossary Search & Filter ---
+        const glossaryGrid = document.getElementById('glossary-grid');
+        const searchInput = document.getElementById('searchInput');
+        const filterButtons = document.getElementById('filter-buttons').querySelectorAll('button');
+
+        function renderGlossary(filterText = '', filterType = 'all') {
+            glossaryGrid.innerHTML = '';
+            
+            const filteredData = glossaryData.filter(item => {
+                const matchText = item.term.toLowerCase().includes(filterText.toLowerCase()) || 
+                                  item.desc.toLowerCase().includes(filterText.toLowerCase());
+                const matchType = filterType === 'all' || item.type === filterType;
+                return matchText && matchType;
+            });
+
+            if (filteredData.length === 0) {
+                glossaryGrid.innerHTML = '<div class="col-span-full text-center text-slate-500 py-8">找不到相符的關鍵字。</div>';
+                return;
+            }
+
+            filteredData.forEach(item => {
+                let badgeColor = '';
+                let badgeText = '';
+                switch(item.type) {
+                    case 'role': badgeColor = 'bg-blue-100 text-blue-800'; badgeText = '團隊職能'; break;
+                    case 'product': badgeColor = 'bg-emerald-100 text-emerald-800'; badgeText = '產品應用'; break;
+                    case 'spec': badgeColor = 'bg-purple-100 text-purple-800'; badgeText = '規格技術'; break;
+                    case 'process': badgeColor = 'bg-orange-100 text-orange-800'; badgeText = '流程術語'; break;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl p-5 shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col h-full';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <h3 class="text-lg font-bold text-slate-900">${item.term}</h3>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-md ${badgeColor}">${badgeText}</span>
+                    </div>
+                    <p class="text-slate-600 text-sm flex-grow">${item.desc}</p>
+                `;
+                glossaryGrid.appendChild(card);
+            });
+        }
+
+        // Event Listeners for Glossary
+        searchInput.addEventListener('input', (e) => {
+            const activeFilterBtn = document.querySelector('#filter-buttons button.bg-blue-600');
+            renderGlossary(e.target.value, activeFilterBtn ? activeFilterBtn.dataset.filter : 'all');
+        });
+
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Update button styles
+                filterButtons.forEach(b => {
+                    b.classList.remove('bg-blue-600', 'text-white');
+                    b.classList.add('bg-slate-200', 'text-slate-700');
+                });
+                e.target.classList.remove('bg-slate-200', 'text-slate-700');
+                e.target.classList.add('bg-blue-600', 'text-white');
+
+                // Re-render
+                renderGlossary(searchInput.value, e.target.dataset.filter);
+            });
+        });
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTimeline();
+            renderChart();
+            renderGlossary();
+            
+            // Simple fade in animation CSS
+            const style = document.createElement('style');
+            style.innerHTML = `
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+            `;
+            document.head.appendChild(style);
+        });
+
+    </script>
+</body>
+</html>
