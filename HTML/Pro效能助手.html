@@ -1,0 +1,582 @@
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { 
+  Plus, 
+  Trash2, 
+  Circle, 
+  LayoutGrid, 
+  List, 
+  AlertCircle, 
+  Clock, 
+  Star, 
+  ArrowRight,
+  ClipboardList,
+  MessageSquareQuote,
+  CheckSquare,
+  Download,
+  Calendar,
+  Copy,
+  Upload,
+  ChevronDown,
+  ChevronUp,
+  Save,
+  FileJson,
+  Database,
+  CheckCircle2,
+  Search,
+  Tag,
+  PieChart,
+  Filter,
+  AlertTriangle,
+  Settings,
+  X,
+  FileText,
+  Wand2,
+  Sparkles,
+  Loader2,
+  FileSpreadsheet
+} from 'lucide-react';
+
+const App = () => {
+  // ----------------------------------------------------------------
+  // 1. 初始化資料
+  // ----------------------------------------------------------------
+  const [tasks, setTasks] = useState(() => {
+    const saved = localStorage.getItem('todo_pro_tasks_v3_final');
+    return saved ? JSON.parse(saved) : [];
+  });
+  
+  const [customTags, setCustomTags] = useState(() => {
+    const saved = localStorage.getItem('todo_pro_tags_v3_final');
+    return saved ? JSON.parse(saved) : ['工作', '生活', '學習', '健康'];
+  });
+
+  const [inputValue, setInputValue] = useState('');
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState('');
+  const [selectedTag, setSelectedTag] = useState('全部');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState('matrix');
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showStats, setShowStats] = useState(false); 
+  const [showTagEditor, setShowTagEditor] = useState(false);
+  const [newTagInput, setNewTagInput] = useState('');
+  const [showReport, setShowReport] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [draggedTaskId, setDraggedTaskId] = useState(null);
+  
+  const fileInputRef = useRef(null);
+  const apiKey = ""; // 執行環境會自動提供
+
+  const QUADRANTS = [
+    { id: 'q1', title: '重要且緊急', icon: <AlertCircle className="text-red-500" size={20} />, color: 'bg-red-50 border-red-200', textColor: 'text-red-700' },
+    { id: 'q2', title: '重要不緊急', icon: <Star className="text-blue-500" size={20} />, color: 'bg-blue-50 border-blue-200', textColor: 'text-blue-700' },
+    { id: 'q3', title: '不重要但緊急', icon: <Clock className="text-orange-500" size={20} />, color: 'bg-orange-50 border-orange-200', textColor: 'text-orange-700' },
+    { id: 'q4', title: '不重要不緊急', icon: <List className="text-gray-500" size={20} />, color: 'bg-gray-50 border-gray-200', textColor: 'text-gray-700' },
+  ];
+
+  // ----------------------------------------------------------------
+  // 2. 資料存儲副作用
+  // ----------------------------------------------------------------
+  useEffect(() => {
+    localStorage.setItem('todo_pro_tasks_v3_final', JSON.stringify(tasks));
+  }, [tasks]);
+
+  useEffect(() => {
+    localStorage.setItem('todo_pro_tags_v3_final', JSON.stringify(customTags));
+  }, [customTags]);
+
+  // ----------------------------------------------------------------
+  // 3. Gemini AI 整合邏輯
+  // ----------------------------------------------------------------
+  const callGemini = async (prompt, systemPrompt = "") => {
+    setIsAiLoading(true);
+    const maxRetries = 5;
+    let delay = 1000;
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+          })
+        });
+
+        if (!response.ok) throw new Error('API 請求失敗');
+        const data = await response.json();
+        setIsAiLoading(false);
+        return data.candidates?.[0]?.content?.parts?.[0]?.text;
+      } catch (error) {
+        if (i === maxRetries - 1) {
+          setIsAiLoading(false);
+          return null;
+        }
+        await new Promise(res => setTimeout(res, delay));
+        delay *= 2;
+      }
+    }
+  };
+
+  const handleAiSmartCategorize = async () => {
+    if (!inputValue.trim()) return;
+    const result = await callGemini(
+      `請分析此任務內容並回傳建議的艾森豪矩陣代號 (q1, q2, q3, q4)。任務內容：${inputValue}`,
+      "你是一個高效能時間管理專家。只需回答 q1, q2, q3 或 q4，不要有額外文字。"
+    );
+    if (result && ['q1', 'q2', 'q3', 'q4'].includes(result.trim().toLowerCase())) {
+      const q = result.trim().toLowerCase();
+      const newTask = {
+        id: Date.now(),
+        text: inputValue,
+        completed: false,
+        result: '',
+        quadrant: q,
+        tag: selectedTag === '全部' ? (customTags[0] || '一般') : selectedTag,
+        startDate: startDate,
+        endDate: endDate || '未設定',
+        createdAt: new Date().toLocaleDateString()
+      };
+      setTasks([newTask, ...tasks]);
+      setInputValue('');
+    }
+  };
+
+  const handleAiRefineOutcome = async (taskId, currentOutcome) => {
+    const task = tasks.find(t => t.id === taskId);
+    const result = await callGemini(
+      `任務內容：${task.text}\n執行心得：${currentOutcome}\n請優化成專業的職場週報文字。`,
+      "你是一個專業顧問。回傳簡潔、具成就感的繁體中文成果描述，不含任何引言。"
+    );
+    if (result) {
+      updateTaskField(taskId, 'result', result.trim());
+    }
+  };
+
+  // ----------------------------------------------------------------
+  // 4. 拖曳與分類邏輯
+  // ----------------------------------------------------------------
+  const onDragStart = (e, taskId) => {
+    setDraggedTaskId(taskId);
+    e.dataTransfer.setData('taskId', taskId.toString());
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const onDragOver = (e) => e.preventDefault();
+
+  const onDrop = (e, targetQuadrant) => {
+    e.preventDefault();
+    const taskIdStr = e.dataTransfer.getData('taskId');
+    if (!taskIdStr) return;
+    const taskId = parseInt(taskIdStr);
+
+    setTasks(prev => prev.map(t => 
+      t.id === taskId ? { ...t, quadrant: targetQuadrant } : t
+    ));
+    setDraggedTaskId(null);
+  };
+
+  const stats = useMemo(() => {
+    const total = tasks.length;
+    const completed = tasks.filter(t => t.completed).length;
+    const overdue = tasks.filter(t => !t.completed && t.endDate !== '未設定' && new Date(t.endDate) < new Date(new Date().setHours(0,0,0,0))).length;
+    const qCount = QUADRANTS.reduce((acc, q) => {
+      acc[q.id] = tasks.filter(t => t.quadrant === q.id && !t.completed).length;
+      return acc;
+    }, {});
+    return { total, completed, overdue, qCount, rate: total > 0 ? Math.round((completed / total) * 100) : 0 };
+  }, [tasks]);
+
+  const listFilteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      const matchesSearch = t.text.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTag = selectedTag === '全部' || t.tag === selectedTag;
+      return matchesSearch && matchesTag;
+    });
+  }, [tasks, searchQuery, selectedTag]);
+
+  const matrixTasks = useMemo(() => {
+    return tasks.filter(t => t.text.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [tasks, searchQuery]);
+
+  const addTask = (e) => {
+    e?.preventDefault();
+    if (!inputValue.trim()) return;
+    const newTask = {
+      id: Date.now(),
+      text: inputValue,
+      completed: false,
+      result: '',
+      quadrant: 'q2',
+      tag: selectedTag === '全部' ? (customTags[0] || '一般') : selectedTag,
+      startDate: startDate,
+      endDate: endDate || '未設定',
+      createdAt: new Date().toLocaleDateString()
+    };
+    setTasks([newTask, ...tasks]);
+    setInputValue('');
+  };
+
+  const deleteTag = (tagToDelete) => {
+    if (customTags.length <= 1) return;
+    const updatedTags = customTags.filter(t => t !== tagToDelete);
+    setCustomTags(updatedTags);
+    setTasks(tasks.map(t => t.tag === tagToDelete ? { ...t, tag: updatedTags[0] } : t));
+    if (selectedTag === tagToDelete) setSelectedTag('全部');
+  };
+
+  const addTag = () => {
+    if (!newTagInput.trim() || customTags.includes(newTagInput)) return;
+    setCustomTags([...customTags, newTagInput.trim()]);
+    setNewTagInput('');
+  };
+
+  const toggleTask = (id) => setTasks(tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+  const deleteTask = (id) => setTasks(tasks.filter(t => t.id !== id));
+  const updateTaskField = (id, field, value) => setTasks(tasks.map(t => t.id === id ? { ...t, [field]: value } : t));
+
+  const checkOverdue = (dateStr) => {
+    if (!dateStr || dateStr === '未設定') return false;
+    return new Date(dateStr) < new Date(new Date().setHours(0,0,0,0));
+  };
+
+  // ----------------------------------------------------------------
+  // 5. 匯出邏輯
+  // ----------------------------------------------------------------
+  const exportToCSV = () => {
+    const headers = ['任務內容', '分類', '重要程度', '開始日期', '預計結束日期', '狀態', '成果記錄'];
+    const rows = tasks.map(t => [
+      t.text,
+      t.tag,
+      QUADRANTS.find(q => q.id === t.quadrant)?.title || '',
+      t.startDate,
+      t.endDate,
+      t.completed ? '已完成' : '進行中',
+      t.result.replace(/\n/g, ' ')
+    ]);
+
+    // 加入 BOM 標記，解決 Excel 開啟 CSV 中文亂碼問題
+    let csvContent = "\uFEFF" + headers.join(",") + "\n";
+    rows.forEach(row => {
+      csvContent += row.map(field => `"${field}"`).join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `待辦清單匯出_${new Date().toLocaleDateString()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const generateReport = () => {
+    const completedTasks = tasks.filter(t => t.completed);
+    return completedTasks.length > 0 
+      ? completedTasks.map(t => `【${t.tag}】${t.text}\n期間：${t.startDate} ~ ${t.endDate}\n成果：${t.result || '未填寫'}\n-------------------`).join('\n') 
+      : "尚無完成項目。";
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-900 text-sm">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Header */}
+        <header className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-200">
+              <ClipboardList className="text-white" size={28} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+                Pro 效能整理助手 <Sparkles size={20} className="text-amber-400" />
+              </h1>
+              <p className="text-slate-400 font-medium">拖曳分類、AI 助手與成果管理</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {isAiLoading && <Loader2 className="animate-spin text-indigo-600 mr-2" size={18} />}
+            <button onClick={() => setShowReport(true)} className="p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 text-slate-600" title="週報生成器">
+              <FileText size={20} />
+            </button>
+            <button onClick={() => setShowTagEditor(!showTagEditor)} className={`p-2.5 border rounded-xl shadow-sm transition-all ${showTagEditor ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`} title="標籤設定">
+              <Settings size={20} />
+            </button>
+            <div className="h-8 w-px bg-slate-200 mx-1 hidden md:block"></div>
+            <div className="flex bg-white rounded-xl p-1 border border-slate-200 shadow-sm">
+              <button onClick={() => setViewMode('matrix')} className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-bold ${viewMode === 'matrix' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}><LayoutGrid size={18} /> 矩陣</button>
+              <button onClick={() => setViewMode('list')} className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-bold ${viewMode === 'list' ? 'bg-slate-900 text-white shadow-md' : 'text-slate-400 hover:bg-slate-50'}`}><List size={18} /> 清單</button>
+            </div>
+          </div>
+        </header>
+
+        {/* 統計區域 */}
+        {showStats && (
+          <section className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 animate-in slide-in-from-top-2 duration-300">
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">任務完成率</p>
+              <p className="text-3xl font-black text-indigo-600">{stats.rate}%</p>
+              <div className="absolute bottom-0 left-0 h-1 bg-indigo-500" style={{ width: `${stats.rate}%` }}></div>
+            </div>
+            <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">逾期項目</p>
+              <p className={`text-3xl font-black ${stats.overdue > 0 ? 'text-red-500' : 'text-slate-700'}`}>{stats.overdue}</p>
+            </div>
+            {QUADRANTS.slice(0, 3).map(q => (
+              <div key={q.id} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hidden md:block">
+                <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">{q.title}</p>
+                <p className="text-3xl font-black text-slate-700">{stats.qCount[q.id]}</p>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {/* 標籤管理面板 */}
+        {showTagEditor && (
+          <div className="mb-6 bg-slate-900 text-white p-6 rounded-3xl shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold flex items-center gap-2"><Tag className="text-indigo-400" /> 標籤管理</h3>
+              <button onClick={() => setShowTagEditor(false)}><X size={20} /></button>
+            </div>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {customTags.map(tag => (
+                <div key={tag} className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 group transition-all">
+                  <span className="font-medium">{tag}</span>
+                  <button onClick={() => deleteTag(tag)} className="text-slate-500 hover:text-red-400"><X size={14} /></button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input 
+                type="text" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)}
+                placeholder="輸入新標籤名稱..." className="flex-grow bg-slate-800 border-none rounded-xl px-4 py-2 text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                onKeyDown={(e) => e.key === 'Enter' && addTag()}
+              />
+              <button onClick={addTag} className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-xl font-bold transition-colors">新增標籤</button>
+            </div>
+          </div>
+        )}
+
+        {/* 搜尋與新增區域 */}
+        <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm mb-6 space-y-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+              <input 
+                type="text" placeholder="關鍵字搜尋..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+              />
+            </div>
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar scrollbar-hide">
+              <button onClick={() => setSelectedTag('全部')} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedTag === '全部' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>全部</button>
+              {customTags.map(t => (
+                <button key={t} onClick={() => setSelectedTag(t)} className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedTag === t ? 'bg-indigo-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}>{t}</button>
+              ))}
+            </div>
+          </div>
+
+          <form onSubmit={addTask} className="flex flex-col md:flex-row gap-4 pt-4 border-t border-slate-50">
+            <div className="flex-grow flex items-center gap-2">
+              <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} placeholder="接下來要做什麼？" className="flex-grow text-lg font-bold px-2 py-1 outline-none placeholder:text-slate-300" />
+              <button 
+                type="button"
+                onClick={handleAiSmartCategorize}
+                disabled={isAiLoading || !inputValue.trim()}
+                className="p-2 bg-amber-50 text-amber-600 rounded-xl hover:bg-amber-100 disabled:opacity-50 transition-colors shadow-sm"
+                title="AI 助手：自動建議象限"
+              >
+                <Wand2 size={20} />
+              </button>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-xl">
+                <Calendar size={16} className="text-indigo-400" />
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-transparent border-none p-0 outline-none w-28 text-xs font-bold text-slate-600" />
+                <span className="text-slate-300">➔</span>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-transparent border-none p-0 outline-none w-28 text-xs font-bold text-slate-600" />
+              </div>
+              <button type="submit" className="px-8 py-3 bg-indigo-600 text-white rounded-2xl font-black shadow-lg transition-all active:scale-95">新增任務</button>
+            </div>
+          </form>
+        </div>
+
+        {/* 視圖呈現 */}
+        {viewMode === 'matrix' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {QUADRANTS.map(q => {
+              const qTasks = matrixTasks.filter(t => t.quadrant === q.id && !t.completed);
+              return (
+                <div 
+                  key={q.id} 
+                  onDragOver={onDragOver}
+                  onDrop={(e) => onDrop(e, q.id)}
+                  className={`flex flex-col min-h-[320px] rounded-3xl border-2 ${q.color} shadow-sm overflow-hidden transition-all duration-300 ${draggedTaskId ? 'ring-2 ring-indigo-300 ring-dashed border-transparent scale-[1.01]' : ''}`}
+                >
+                  <div className="p-5 flex items-center justify-between border-b border-inherit bg-white/40 backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                      {q.icon}
+                      <h2 className={`text-base font-black ${q.textColor}`}>{q.title}</h2>
+                    </div>
+                    <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-white/80 shadow-sm text-slate-400 uppercase tracking-tighter">{qTasks.length} 待辦</span>
+                  </div>
+                  <div className="p-4 flex-grow overflow-y-auto custom-scrollbar space-y-3">
+                    {qTasks.map(task => (
+                      <div 
+                        key={task.id} 
+                        draggable
+                        onDragStart={(e) => onDragStart(e, task.id)}
+                        className={`group bg-white rounded-2xl border border-slate-100 shadow-sm p-4 transition-all hover:shadow-md hover:border-indigo-200 cursor-grab active:cursor-grabbing ${draggedTaskId === task.id ? 'opacity-30' : ''}`}
+                      >
+                        <div className="flex items-start gap-4">
+                          <button onClick={() => toggleTask(task.id)} className="mt-1 flex-shrink-0 text-slate-200 hover:text-indigo-400 transition-all hover:scale-125"><Circle size={22} /></button>
+                          <div className="flex-grow min-w-0">
+                            <p className="text-slate-800 font-bold leading-tight mb-2">{task.text}</p>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <span className="flex items-center gap-1.5 text-[10px] px-2 py-0.5 bg-slate-100 text-slate-500 rounded-lg font-bold"><Tag size={10}/> {task.tag}</span>
+                              <span className={`flex items-center gap-1.5 text-[10px] font-black uppercase ${checkOverdue(task.endDate) ? 'text-red-500 bg-red-50 px-2 py-0.5 rounded-lg border border-red-100' : 'text-slate-400'}`}>
+                                <Clock size={10}/> {task.endDate === '未設定' ? '無期限' : task.endDate}
+                                {checkOverdue(task.endDate) && <AlertTriangle size={10} className="animate-pulse ml-1" />}
+                              </span>
+                            </div>
+                          </div>
+                          <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 p-1.5 text-slate-200 hover:text-red-500 transition-all bg-slate-50 rounded-lg"><Trash2 size={16} /></button>
+                        </div>
+                      </div>
+                    ))}
+                    {qTasks.length === 0 && (
+                      <div className="h-full flex flex-col items-center justify-center py-10 text-slate-300 italic opacity-40">
+                        <CheckCircle2 size={40} className="mb-2" />
+                        <p className="font-bold">此區已清空</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+             <div className="p-5 bg-slate-50/50 flex justify-between items-center border-b border-slate-200">
+              <h3 className="font-black text-slate-700 flex items-center gap-2 uppercase tracking-widest text-xs">任務歷史總表</h3>
+              <div className="text-[10px] font-bold text-slate-400">總計 {listFilteredTasks.length} 項</div>
+            </div>
+            {listFilteredTasks.map(task => (
+              <div key={task.id} className={`p-5 hover:bg-slate-50 transition-all group ${task.completed ? 'bg-indigo-50/10' : ''}`}>
+                <div className="flex items-start gap-4">
+                  <button onClick={() => toggleTask(task.id)} className={`mt-1 flex-shrink-0 transition-all ${task.completed ? 'text-green-500 scale-110' : 'text-slate-200 hover:text-indigo-400'}`}>
+                    {task.completed ? <CheckCircle2 size={26} /> : <Circle size={26} />}
+                  </button>
+                  <div className="flex-grow">
+                    <div className="flex flex-wrap items-center gap-y-2 mb-2">
+                      <span className={`text-base font-black mr-4 ${task.completed ? 'text-indigo-700' : 'text-slate-700'}`}>{task.text}</span>
+                      <div className="flex items-center gap-2">
+                        <select value={task.tag} onChange={(e) => updateTaskField(task.id, 'tag', e.target.value)} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-1 rounded-lg border-none focus:ring-0 font-bold">
+                          {customTags.map(tag => <option key={tag} value={tag}>{tag}</option>)}
+                        </select>
+                        <select value={task.quadrant} onChange={(e) => updateTaskField(task.id, 'quadrant', e.target.value)} className="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-1 rounded-lg focus:ring-0 font-bold">
+                          {QUADRANTS.map(q => <option key={q.id} value={q.id}>{q.title}</option>)}
+                        </select>
+                        <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${!task.completed && checkOverdue(task.endDate) ? 'bg-red-500 text-white' : 'bg-slate-100 text-slate-400'}`}>{task.endDate}</span>
+                      </div>
+                    </div>
+                    {task.completed && (
+                      <div className="mt-3 bg-white border border-indigo-100 rounded-2xl p-4 shadow-sm group-hover:border-indigo-300 transition-colors">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+                            <MessageSquareQuote size={14} /> 成果記錄
+                          </span>
+                          <button 
+                            onClick={() => handleAiRefineOutcome(task.id, task.result)}
+                            disabled={isAiLoading || !task.result}
+                            className="flex items-center gap-1 text-[10px] text-indigo-500 font-bold hover:text-indigo-700 disabled:opacity-30"
+                          >
+                            <Sparkles size={12} /> AI 優化
+                          </button>
+                        </div>
+                        <textarea value={task.result} onChange={(e) => updateTaskField(task.id, 'result', e.target.value)} placeholder="記錄成果..." className="w-full text-sm bg-transparent border-none focus:ring-0 p-0 outline-none text-slate-600 italic font-medium" rows={2} />
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 p-2 text-slate-300 hover:text-red-500 transition-colors"><Trash2 size={20} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 底部功能與數據管理 */}
+        <div className="mt-8 flex justify-center gap-6">
+          <button onClick={() => setShowStats(!showStats)} className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-bold transition-colors">
+            <PieChart size={20} /> 統計報表
+          </button>
+          <button onClick={() => setShowExportMenu(!showExportMenu)} className="flex items-center gap-2 text-slate-400 hover:text-indigo-600 font-bold transition-colors">
+            <Database size={20} /> 數據備份
+          </button>
+        </div>
+
+        {showExportMenu && (
+          <div className="mt-4 bg-white p-4 rounded-2xl border border-slate-200 flex flex-wrap justify-center gap-4 animate-in fade-in shadow-md">
+            <button onClick={() => {
+              const blob = new Blob([JSON.stringify({ tasks, tags: customTags }, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a'); a.href = url; a.download = `todo_backup_${new Date().toISOString().split('T')[0]}.json`; a.click();
+            }} className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors">
+              <FileJson size={16}/> 儲存 JSON 備份
+            </button>
+            <button onClick={exportToCSV} className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors">
+              <FileSpreadsheet size={16}/> 匯出 Excel (CSV)
+            </button>
+            <button onClick={() => fileInputRef.current.click()} className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold hover:bg-orange-100 transition-colors">
+              <Upload size={16}/> 讀取 JSON 備份
+            </button>
+            <input type="file" ref={fileInputRef} className="hidden" onChange={(e) => {
+              const file = e.target.files[0];
+              if(!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => { 
+                try {
+                  const data = JSON.parse(ev.target.result);
+                  if (data.tasks) setTasks(data.tasks);
+                  if (data.tags) setCustomTags(data.tags);
+                  alert('匯入成功！');
+                } catch(e) { alert('檔案格式錯誤'); }
+              };
+              reader.readAsText(file);
+            }} />
+          </div>
+        )}
+
+        {/* 報表彈窗 */}
+        {showReport && (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+              <div className="p-6 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                <h3 className="text-xl font-black text-slate-800">一鍵產出成果報表</h3>
+                <button onClick={() => setShowReport(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20} /></button>
+              </div>
+              <div className="p-6 overflow-y-auto flex-grow">
+                <textarea readOnly value={generateReport()} className="w-full h-full min-h-[300px] font-mono text-sm p-4 bg-slate-50 border-none rounded-2xl focus:ring-0 custom-scrollbar" />
+              </div>
+              <div className="p-6 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+                <button onClick={() => { navigator.clipboard.writeText(generateReport()); alert('已複製週報！'); }} className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center gap-2 shadow-lg shadow-indigo-100">
+                  <Copy size={18} /> 複製文字
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
+    </div>
+  );
+};
+
+export default App;
