@@ -1,7 +1,7 @@
 # To Do Task
-1. 先做Modem Deep Research
-2. 效能助手打包
-3. RAS平台AI交流
+1. (03/07, Done) 先做Modem Deep Research
+2. (03/07, Done) 效能助手打包
+3. RAS平台AI構想
 
 # 長期目標
 - 用AI做即時通報系統
@@ -9,16 +9,20 @@
 - 做Agent skills
 - 建立資料流動平台 -> AI診斷 -> 通知 -> 跨資料sync(分析)
 
+# 想要解決的問題
+- RAS分析模板
+- M Time 分析模板, Dashboard版面, ETL flow(+API) 
+- HC AOP AI模板
+
+# Idea 發想
+1. 用Data Schema問AI, 可以分析什麼問題? (需要Prompt設計), 產出各種不同的分析維度的python function
+2. 用AI設計, python資料整理完後的輸出格式(打包小包資料)
+3. 將小包資料加入分析prompt, 進行輕量化分析
+
 # Prompt
 
 # VibeConsult
 - 我想要建立一個工作紀錄的工具, 可以讓從日常工作中, 累積執行經驗, 並往上總結成週報與成果展現, 再連接到個人年度績效 
-
-# 想要解決的問題
-- RAS
-- M Time
-- HC AOP
-
 
 # 功能發想:
 - 我需要能夠記錄每天的to do list, 還可以標記重要性與合作窗口
