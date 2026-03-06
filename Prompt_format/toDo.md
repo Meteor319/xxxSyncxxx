@@ -3,6 +3,12 @@
 2. 效能助手打包
 3. RAS平台AI交流
 
+# 長期目標
+- 用AI做即時通報系統
+- 做CLAUDE.md,
+- 做Agent skills
+- 建立資料流動平台 -> AI診斷 -> 通知 -> 跨資料sync(分析)
+
 # Prompt
 
 # VibeConsult
@@ -21,7 +27,7 @@
 - 需要能夠讓AI或是LLM model能夠讀懂這些資訊, 並將內容累積成營運知識庫, 可以重現處理流程與框架, 或是根據我的問題回答過去所做的事情
 
 # 我會的技術
-- python
+- python: 3.8
 - IDE: spyder, jupyter lab
 - python package: flask, streamlit, echart
 - local DB: maria db, heidi sql
