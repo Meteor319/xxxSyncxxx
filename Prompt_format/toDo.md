@@ -1,11 +1,13 @@
 # To Do Task
+1. RAS平台AI構想
+
+# Finish Items
 1. (03/07, Done) 先做Modem Deep Research
 2. (03/07, Done) 效能助手打包
-3. RAS平台AI構想
 
 # 長期目標
 - 用AI做即時通報系統
-- 做CLAUDE.md,
+- 做CLAUDE.md
 - 做Agent skills
 - 建立資料流動平台 -> AI診斷 -> 通知 -> 跨資料sync(分析)
 
@@ -27,7 +29,7 @@
 
 
 
-# Prompt
+# Prompt Pool
 
 # VibeConsult
 - 我想要建立一個工作紀錄的工具, 可以讓從日常工作中, 累積執行經驗, 並往上總結成週報與成果展現, 再連接到個人年度績效 
