@@ -1,4 +1,4 @@
-# To Do Task
+# 1.To Do Task
 1. RAS平台AI構想
 
 ## 長期目標
@@ -26,7 +26,7 @@
 現在的問題應該是要解決
 ```
 
-# AI應用
+# 2.AI應用
 ## AI新知
 - 做CLAUDE.md
 - 做Agent skills
@@ -37,7 +37,7 @@
 1. 先看AI犯錯, 再問他為什麼犯錯與如何避免
 
 
-# Prompt Pool
+# 3.Prompt Pool
 ```
 # VibeConsult
 - 我想要建立一個工作紀錄的工具, 可以讓從日常工作中, 累積執行經驗, 並往上總結成週報與成果展現, 再連接到個人年度績效 
