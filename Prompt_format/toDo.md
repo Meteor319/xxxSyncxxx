@@ -1,37 +1,40 @@
 # To Do Task
 1. RAS平台AI構想
 
-# 長期目標
+## 長期目標
 - 用AI做即時通報系統
 - 建立資料流動平台 -> AI診斷 -> 通知 -> 跨資料sync(分析)
 
-# 想要解決的問題
+## 想要解決的問題
 - RAS分析模板
 - M Time 分析模板, Dashboard版面, ETL flow(+API) 
 - HC AOP AI模板
 - M Time to RAS Algorithm
 
-# Finish Items
+## Finish Items
 1. (03/07, Done) 先做Modem Deep Research
 2. (03/07, Done) 效能助手打包
 
-
-# AI新知
-- 做CLAUDE.md
-- 做Agent skills
-- Perplexity Computer
-
-
-# Idea 發想
+## Idea 發想
 0. 分層次將資料給AI, 讓AI分析並提出下一個問題, 且同時提供撈資料的code(text to sql)
 1. 用Data Schema問AI, 可以分析什麼問題? (需要Prompt設計), 產出各種不同的分析維度的python function
 2. 用AI設計, python資料整理完後的輸出格式(打包小包資料)
 3. 將小包資料加入分析prompt, 進行輕量化分析
 4. 最後手動將Prompt與小包資料貼到copilot, 進行分析, 再畫圖, 並產出HTML版本的報告(one page)
 
-# AI使用技巧
-1. 先看AI犯錯, 再問他為什麼犯錯與如何避免
+```
+現在的問題應該是要解決
+```
 
+# AI應用
+## AI新知
+- 做CLAUDE.md
+- 做Agent skills
+- Perplexity Computer
+
+  
+## AI使用技巧
+1. 先看AI犯錯, 再問他為什麼犯錯與如何避免
 
 
 # Prompt Pool
