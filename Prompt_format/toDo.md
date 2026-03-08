@@ -1,14 +1,8 @@
 # To Do Task
 1. RAS平台AI構想
 
-# Finish Items
-1. (03/07, Done) 先做Modem Deep Research
-2. (03/07, Done) 效能助手打包
-
 # 長期目標
 - 用AI做即時通報系統
-- 做CLAUDE.md
-- 做Agent skills
 - 建立資料流動平台 -> AI診斷 -> 通知 -> 跨資料sync(分析)
 
 # 想要解決的問題
@@ -16,6 +10,17 @@
 - M Time 分析模板, Dashboard版面, ETL flow(+API) 
 - HC AOP AI模板
 - M Time to RAS Algorithm
+
+# Finish Items
+1. (03/07, Done) 先做Modem Deep Research
+2. (03/07, Done) 效能助手打包
+
+
+# AI新知
+- 做CLAUDE.md
+- 做Agent skills
+- Perplexity Computer
+
 
 # Idea 發想
 0. 分層次將資料給AI, 讓AI分析並提出下一個問題, 且同時提供撈資料的code(text to sql)
