@@ -11,10 +11,6 @@
 - HC AOP AI模板
 - M Time to RAS Algorithm
 
-## Finish Items
-1. (03/07, Done) 先做Modem Deep Research
-2. (03/07, Done) 效能助手打包
-
 ## Idea 發想
 0. 分層次將資料給AI, 讓AI分析並提出下一個問題, 且同時提供撈資料的code(text to sql)
 1. 用Data Schema問AI, 可以分析什麼問題? (需要Prompt設計), 產出各種不同的分析維度的python function
@@ -23,7 +19,19 @@
 4. 最後手動將Prompt與小包資料貼到copilot, 進行分析, 再畫圖, 並產出HTML版本的報告(one page)
 
 ```
-現在的問題應該是要解決
+現在的問題應該是要解決, 用現有技術做一個AI即時通報系統
+# 建立資料流動平台 -> AI診斷 -> 通知 -> 跨資料分析
+# Prompt
+# VibeConsult
+
+# 我會的技術
+- python: 3.8
+- IDE: spyder, jupyter lab
+- python package: flask, streamlit, echart
+- local DB: maria db, heidi sql
+- Tableau
+- sharepoint, wiki
+- gitea
 ```
 
 # 2.AI應用
@@ -32,7 +40,6 @@
 - 做Agent skills
 - Perplexity Computer
 
-  
 ## AI使用技巧
 1. 先看AI犯錯, 再問他為什麼犯錯與如何避免
 
@@ -57,3 +64,7 @@
 - sharepoint, wiki
 - gitea
 ```
+
+# 4.Finish Items
+1. (03/07, Done) 先做Modem Deep Research
+2. (03/07, Done) 效能助手打包
