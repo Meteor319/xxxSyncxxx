@@ -66,6 +66,61 @@
 - gitea
 ```
 
+# 3-1.Prompt Pool - RAS Platform
+```
+#VibeCoding
+我現在需要針對**RAS**開發**資料流動平台**, 並做成**通報系統**
+
+# 關鍵要素
+- 能夠**自動**且**快速**計算各產品線分攤後的結果
+- 能夠進行drill down分析
+- 能夠進行QoQ比對
+
+# 先有基礎功能, 再拓展資料源
+
+# 系統流程
+
+## 1.讀取資料模組
+- 這個階段需要讀取資料, 並進行必要的欄位清洗(rename column)
+  1.ras_frozen
+  2.ras_pie
+  3.ras_tmp
+  4.amort_ratio
+  5.eo_aop
+  6.wpo_aop
+  7.project_milestone
+  8.tech_wireless_modem_config
+
+## 2.QoQ偵測模組
+- 這個模組需要針對讀進來的資料進行QoQ分析比對, 屬於描述性的分析
+  1.amort_ratio: (1) 各產品線比例分攤, (2) Shippment差異, (3) BG-H3: Common part, Corp H3
+  2.ras_frozen: from gen level to project level
+  3.ras_pie: from gen level to project level
+  4.ras_temp: from gen level to project level
+
+## 3.模組化計算流程
+- 這個階段會需要定義, 需要計算的維度與資訊
+- (factor_x) 格式: {source} * {amort_ratio} = {amorted_result}
+- (factor_y) 格式: {eo_aop}, {wpo_aop}
+
+## 4.預期輸出格式
+- 這個模組會定義, 計算之後的產出格式, 先以excel format為主
+- 後續會把每次分析的格式都系統化先用python產出
+- 中期: 再做到python畫圖(jupyter lab pgwalk), html畫圖, AI產結果
+
+## 5.AI診斷模組
+- 這個模組會定義, 各種資料源的資料, 可以進行的初步分析
+  1.amort_ratio
+  2.ras_frozen:
+     - Org level: 實際填寫人數, Regular, DS, OT人數與分布
+     - Tech level:
+     - Special project: support的人數與組織是否有差異,
+         - 定義Special project的project code config table
+
+
+
+```
+
 # 4.Finish Items
 1. (03/07, Done) 先做Modem Deep Research
 2. (03/07, Done) 效能助手打包
