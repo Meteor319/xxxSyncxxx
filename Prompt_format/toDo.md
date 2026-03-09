@@ -105,7 +105,7 @@
 - (factor_y) 格式: {eo_aop}, {wpo_aop}
 
 ## 4.預期輸出格式
-- 這個模組會定義, 計算之後的產出格式, 先以excel format為主
+- 這個模組會定義, 計算之後的產出格式, 先以excel format為主(需要呈現什麼資訊, 排列columns, rows; Gen/Project)
 - 後續會把每次分析的格式都系統化先用python產出
 - 中期: 再做到python畫圖(jupyter lab pgwalk), html畫圖, AI產結果
 
