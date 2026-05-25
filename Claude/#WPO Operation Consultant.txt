@@ -1,0 +1,59 @@
+#WPO Operation Consultant
+
+#周老師prompt的使用
+
+#The AI impact:
+- 應用情境: new idea, slides靈感, 結案報告
+- 當high level mgr只是模糊的時候, 如何引導主管說出想要的方向
+
+# 我想要讓這個流程是結合WPO特色的, 具有濃厚的WPO元素, 可以讓大老闆出去推廣的
+# 讓AI時代, 帶一點人味, 也提升人的溝通能力
+
+#流程
+
+1./prof skill
+- #WPO元素
+- 融入課程精華(WPO辦的課程): 讓沒有上課的人也能享受課程效益, 擴大課程影響力
+- 讀書會後的input: 組織知識的提升
+
+
+2.CLAUDE.md
+- 紀錄人, 組織的背景資訊, 絕對與相對資訊
+- OMO:
+- WBG
+
+3.個人工作紀錄
+- M Time
+- RAS
+
+4.組織知識
+- 跨團隊知識整理
+- PMO: project progress
+- TMO: feature list
+
+
+5.個人顧問
+- 專家視角
+
+6.high level guidance
+- WPE, WPO all hands & AOP
+- WTG AOP
+- Corp AOP
+- CT input
+
+
+#對人的影響
+1.內化
+- 提高思考維度
+- 向上對焦
+- 加速思考效率
+
+2.外顯
+- 提高產出質量
+- 有更多時間準備溝通與人的互動
+
+
+
+
+
+
