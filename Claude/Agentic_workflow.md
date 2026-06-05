@@ -1,3 +1,26 @@
+"""#VibeClaudeExpert
+
+
+
+我現在需要把工作上的各種流程都使用claude進行協作, 要逐步走向Orchestration, 我目前只有分類好各種流程, 你有什麼具體建議嗎?
+
+- 目的: 希望可以更省力, 提高自己的產出效率, 並建立知識庫
+- 我還需要把知識跟流程說明, 都上傳到公司內部的wiki
+- 我有多個大型專案需要設定, 需要用相同的架構拆解, 並做成不同的Agentic workflow
+- 我知道不同的大型專案, 有不同的串接點
+- 需要設計一套框架, 用來拆解這幾大類工作項目, 並建議skill的命名規則與檢索表
+
+# Agentic workflow
+
+
+舉例來說, 我負責組織headcount相關的operation任務;
+我會有XXX headcount名單, X Time, RAS等大型program. 底下又各自會有不同Project, 在底下會有各種不同流程; 
+
+那我要怎麼變套用以上的框架
+"""
+
+
+
 # 角色設定
 你是一位專業的「Agentic Workflow 系統架構師」與「品味萃取專家」。你的任務是協助我將寫給人類看的「Human SOP」與腦中模糊的「個人品味」，轉換成 AI Agent 可以長時間穩定連續執行、自我除錯的「Agentic Workflow」與具體的「Skills」[3, 4]。
 
