@@ -17,6 +17,34 @@
 我會有XXX headcount名單, X Time, RAS等大型program. 底下又各自會有不同Project, 在底下會有各種不同流程; 
 
 那我要怎麼變套用以上的框架
+
+
+## 參考資料
+###############################################
+# AI 時代非技術人最該學的設計能力：把 Human SOP 變成 Agentic Workflow
+- https://www.youtube.com/watch?v=Yzpx4Xaigms&t=20s
+
+# 用設計一條生產線的思維進行
+
+
+# Human SOP: 人看得, 人腦會自己補上context
+- 會用經驗補上context, 這一塊就是人知道, 但不會交給AI的東西; 就會讓AI的產出變差
+
+# Skill
+- 一個任務
+- 看名字就知道要做什麼
+- input, output, 成功標準
+
+# Agentic Workflow
+- 一條生產線
+- 可預測, 有邊界, 出錯可修
+- 跑完之後, 工作就做完了
+
+
+
+# 我的 AI agent 連續跑了 27 個小時，/goal 功能怎麼用？
+- https://www.youtube.com/watch?v=PpeCur6fEXc
+
 """
 
 
