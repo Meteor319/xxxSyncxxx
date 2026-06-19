@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMO/WPO AI 知識管理框架提案</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a2332;--ink-light:#3d4f63;--ink-muted:#6b7d93;
+  --surface:#f7f6f3;--surface-warm:#f0ede6;--white:#fff;
+  --accent:#c4873a;--accent-light:#f5e6d0;--accent-dark:#9a6829;
+  --teal:#1a7a6d;--teal-light:#e0f2ee;
+  --coral:#c4553a;--coral-light:#fce8e3;
+  --purple:#6b5ab5;--purple-light:#eeebfa;
+  --border:#e2dfd8;
+  --font-body:'Noto Sans TC','Inter',system-ui,sans-serif;
+  --font-display:'Inter','Noto Sans TC',system-ui,sans-serif;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font-body);color:var(--ink);background:var(--white);line-height:1.75;-webkit-font-smoothing:antialiased}
+
+.container{max-width:820px;margin:0 auto;padding:0 2rem}
+
+/* Hero */
+.hero{background:var(--ink);color:var(--white);padding:5rem 0 4rem;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:0;left:0;right:0;height:120px;background:linear-gradient(to top,rgba(26,35,50,0),rgba(26,35,50,.04))}
+.hero .eyebrow{font-family:var(--font-display);font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem;display:inline-block;border-bottom:2px solid var(--accent);padding-bottom:.25rem}
+.hero h1{font-family:var(--font-display);font-size:2.25rem;font-weight:700;line-height:1.3;margin-bottom:1.25rem;max-width:620px}
+.hero .subtitle{font-size:1.05rem;color:rgba(255,255,255,.7);max-width:560px;line-height:1.8}
+
+/* Section */
+section{padding:4rem 0}
+section+section{border-top:1px solid var(--border)}
+.section-label{font-family:var(--font-display);font-size:.7rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-dark);margin-bottom:.75rem}
+section h2{font-family:var(--font-display);font-size:1.55rem;font-weight:700;color:var(--ink);line-height:1.35;margin-bottom:1.25rem}
+section h3{font-size:1.1rem;font-weight:600;color:var(--ink);margin:2rem 0 .75rem}
+section p{color:var(--ink-light);margin-bottom:1rem;max-width:640px}
+
+/* Cards */
+.card-grid{display:grid;gap:1rem;margin:1.5rem 0}
+.card-grid.cols-2{grid-template-columns:repeat(2,1fr)}
+.card-grid.cols-3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:640px){.card-grid.cols-2,.card-grid.cols-3{grid-template-columns:1fr}}
+
+.card{padding:1.5rem;border-radius:10px;border:1px solid var(--border)}
+.card.accent-bg{background:var(--accent-light);border-color:transparent}
+.card.teal-bg{background:var(--teal-light);border-color:transparent}
+.card.coral-bg{background:var(--coral-light);border-color:transparent}
+.card.purple-bg{background:var(--purple-light);border-color:transparent}
+.card .card-icon{font-size:1.5rem;margin-bottom:.75rem;display:block}
+.card .card-title{font-family:var(--font-display);font-weight:600;font-size:.95rem;color:var(--ink);margin-bottom:.5rem}
+.card .card-body{font-size:.875rem;color:var(--ink-light);line-height:1.7}
+
+/* Highlight box */
+.highlight{background:var(--surface);border-left:3px solid var(--accent);padding:1.25rem 1.5rem;border-radius:0 8px 8px 0;margin:1.5rem 0}
+.highlight p{margin:0;color:var(--ink-light);font-size:.9rem}
+.highlight strong{color:var(--ink);font-weight:600}
+
+/* Comparison table */
+.compare-table{width:100%;border-collapse:separate;border-spacing:0;margin:1.5rem 0;border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.compare-table th,.compare-table td{padding:.875rem 1rem;text-align:left;font-size:.875rem}
+.compare-table thead th{background:var(--ink);color:var(--white);font-family:var(--font-display);font-weight:600;font-size:.8rem;letter-spacing:.03em}
+.compare-table tbody tr:nth-child(even){background:var(--surface)}
+.compare-table tbody td:first-child{font-weight:500;color:var(--ink)}
+.compare-table .positive{color:var(--teal);font-weight:600}
+.compare-table .negative{color:var(--coral)}
+
+/* Metrics */
+.metric-row{display:flex;gap:1.5rem;margin:1.5rem 0;flex-wrap:wrap}
+.metric{flex:1;min-width:140px;text-align:center;padding:1.25rem;border-radius:10px;background:var(--surface)}
+.metric .number{font-family:var(--font-display);font-size:2rem;font-weight:700;color:var(--accent-dark);line-height:1}
+.metric .label{font-size:.8rem;color:var(--ink-muted);margin-top:.4rem}
+
+/* Flow diagram */
+.flow{display:flex;align-items:center;gap:.5rem;margin:1.5rem 0;flex-wrap:wrap;justify-content:center}
+.flow-step{padding:.6rem 1.1rem;border-radius:8px;font-size:.85rem;font-weight:500;white-space:nowrap}
+.flow-arrow{color:var(--ink-muted);font-size:.85rem}
+.flow-step.f-amber{background:var(--accent-light);color:var(--accent-dark)}
+.flow-step.f-teal{background:var(--teal-light);color:var(--teal)}
+.flow-step.f-purple{background:var(--purple-light);color:var(--purple)}
+
+/* Timeline */
+.timeline{margin:1.5rem 0;position:relative;padding-left:1.75rem}
+.timeline::before{content:'';position:absolute;left:.35rem;top:.5rem;bottom:.5rem;width:2px;background:var(--border)}
+.timeline-item{position:relative;margin-bottom:1.5rem}
+.timeline-item::before{content:'';position:absolute;left:-1.4rem;top:.55rem;width:10px;height:10px;border-radius:50%;border:2px solid var(--accent);background:var(--white)}
+.timeline-item.done::before{background:var(--accent);border-color:var(--accent)}
+.timeline-item .tl-title{font-weight:600;font-size:.95rem;color:var(--ink)}
+.timeline-item .tl-body{font-size:.85rem;color:var(--ink-muted);margin-top:.25rem}
+
+/* Footer */
+.footer{background:var(--surface-warm);padding:3rem 0;text-align:center}
+.footer p{color:var(--ink-muted);font-size:.85rem}
+.footer .sig{font-weight:600;color:var(--ink);font-size:1rem;margin-bottom:.25rem}
+
+/* Steps */
+.step-block{margin:1.5rem 0;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.step-header{display:flex;align-items:center;gap:.75rem;padding:1rem 1.25rem;background:var(--surface);border-bottom:1px solid var(--border)}
+.step-num{font-family:var(--font-display);font-weight:700;font-size:.85rem;color:var(--white);background:var(--accent);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-header .step-title{font-weight:600;font-size:.95rem;color:var(--ink)}
+.step-header .step-meta{margin-left:auto;font-size:.75rem;color:var(--ink-muted);white-space:nowrap}
+.step-body{padding:1.25rem}
+.step-body p{font-size:.9rem;color:var(--ink-light);margin-bottom:.75rem;max-width:none}
+.step-body p:last-child{margin-bottom:0}
+
+/* Substeps */
+.substep{display:flex;gap:.75rem;margin:.75rem 0;padding:.75rem 1rem;background:var(--surface);border-radius:8px;align-items:flex-start}
+.substep-marker{font-family:var(--font-display);font-weight:600;font-size:.8rem;color:var(--accent-dark);flex-shrink:0;margin-top:.1rem}
+.substep-content{font-size:.875rem;color:var(--ink-light);line-height:1.65}
+.substep-content strong{color:var(--ink);font-weight:600}
+
+/* Code block */
+.code-example{background:var(--ink);color:rgba(255,255,255,.85);padding:1rem 1.25rem;border-radius:8px;font-family:'SF Mono','Consolas',monospace;font-size:.8rem;line-height:1.7;overflow-x:auto;margin:.75rem 0}
+.code-example .comment{color:rgba(255,255,255,.4)}
+.code-example .hl{color:var(--accent);font-weight:500}
+
+/* Role table */
+.role-grid{display:grid;grid-template-columns:120px 1fr 1fr;gap:1px;background:var(--border);border-radius:10px;overflow:hidden;margin:1.5rem 0}
+.role-grid>div{padding:.75rem 1rem;background:var(--white);font-size:.85rem;color:var(--ink-light)}
+.role-grid>div:nth-child(-n+3){background:var(--ink);color:var(--white);font-family:var(--font-display);font-weight:600;font-size:.8rem}
+.role-grid>div:nth-child(3n+1){font-weight:500;color:var(--ink);background:var(--surface)}
+@media(max-width:640px){.role-grid{grid-template-columns:1fr;}}
+
+/* Checklist */
+.checklist{margin:1rem 0;list-style:none;padding:0}
+.checklist li{position:relative;padding:.5rem 0 .5rem 1.75rem;font-size:.875rem;color:var(--ink-light);border-bottom:1px solid var(--border)}
+.checklist li:last-child{border-bottom:none}
+.checklist li::before{content:'○';position:absolute;left:0;top:.5rem;font-size:1rem;color:var(--accent);font-weight:600}
+
+/* Print */
+@media print{
+  .hero{padding:2rem 0;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  section{padding:2rem 0;page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<header class="hero">
+  <div class="container">
+    <span class="eyebrow">OMO/WPO × AI 知識管理</span>
+    <h1>讓 AI 真正讀懂我們的業務<br>而不只是回答通用問題</h1>
+    <p class="subtitle">一套以 Token 效率為核心的三層知識架構，將散落在 100+ 份文件中的組織智慧，轉化為 Claude 可反覆精準調用的結構化知識庫。</p>
+  </div>
+</header>
+
+<!-- ==================== 1. WHY OMO ==================== -->
+<section>
+  <div class="container">
+    <span class="section-label">為何適合 OMO</span>
+    <h2>這個架構是為 OMO 的工作特性量身設計的</h2>
+    <p>OMO/WPO 的知識環境有三個顯著特徵，一般的「全文件丟給 AI」做法無法有效應對。我們的框架針對這三個特徵各有對應設計。</p>
+
+    <div class="card-grid cols-3">
+      <div class="card accent-bg">
+        <span class="card-icon">&#9670;</span>
+        <div class="card-title">跨領域、高交叉</div>
+        <div class="card-body">營運流程（HC、M Time）與技術 Milestone（MRD→CMP→MP）高度連動。單一領域的知識庫無法覆蓋日常工作的真實問題。<br><br><strong>對應設計：</strong>三個領域各一張知識卡 + 跨域橋接機制，讓 Claude 能同時理解營運時程和技術節點的銜接。</div>
+      </div>
+      <div class="card teal-bg">
+        <span class="card-icon">&#9670;</span>
+        <div class="card-title">術語密度高</div>
+        <div class="card-body">組織內部大量使用縮寫（OMO、WPO、RAS、CMP...），如果 AI 不理解這些術語，每次回答都可能出現低級錯誤。<br><br><strong>對應設計：</strong>L0 常駐術語表，每次對話自動載入，確保所有回答都使用正確的組織語言。</div>
+      </div>
+      <div class="card purple-bg">
+        <span class="card-icon">&#9670;</span>
+        <div class="card-title">圖表承載關鍵資訊</div>
+        <div class="card-body">Milestone 流程圖、HC 分配圖表、組織架構圖——大量關鍵資訊以圖片形式存在於簡報中，純文字萃取會遺漏。<br><br><strong>對應設計：</strong>圖片→文字描述、流程圖→Mermaid 語法的標準化轉換流程，一次轉換、永久複用。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2. PAIN POINTS ==================== -->
+<section>
+  <div class="container">
+    <span class="section-label">解決的痛點</span>
+    <h2>三個團隊每天都在面對的問題</h2>
+
+    <table class="compare-table">
+      <thead>
+        <tr><th style="width:22%">痛點</th><th style="width:39%">現在的做法</th><th style="width:39%">新框架的做法</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>回答不精確</td>
+          <td class="negative">Claude 不了解組織術語和內部流程，經常給出通用但不適用的回答，需要人工修正</td>
+          <td class="positive">L0 術語常駐 + L1 流程摘要，Claude 用正確的組織語言回答，引用具體內部規範</td>
+        </tr>
+        <tr>
+          <td>重複貼資料</td>
+          <td class="negative">每次新對話都要重新找文件、複製貼上，同一份 SOP 一週內可能被貼 10 次以上</td>
+          <td class="positive">知識收錄一次，永久可用。只需告訴 Claude 載入哪張知識卡，不用再手動貼文件</td>
+        </tr>
+        <tr>
+          <td>Token 費用高</td>
+          <td class="negative">每次都把整份文件丟進去，大量 Token 花在讀取 AI 不需要的內容上</td>
+          <td class="positive">三層分載，80% 問題只需 L0+L1（~4K tokens），比全文載入省 70-90%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== 3. BENEFITS ==================== -->
+<section>
+  <div class="container">
+    <span class="section-label">預期效益</span>
+    <h2>可量化的改善與長期價值</h2>
+
+    <h3>直接效益</h3>
+    <div class="metric-row">
+      <div class="metric">
+        <div class="number">70-90%</div>
+        <div class="label">Token 成本降低</div>
+      </div>
+      <div class="metric">
+        <div class="number">50%+</div>
+        <div class="label">操作時間縮短</div>
+      </div>
+      <div class="metric">
+        <div class="number">80%</div>
+        <div class="label">問題免修正率目標</div>
+      </div>
+      <div class="metric">
+        <div class="number">1 次</div>
+        <div class="label">收錄即永久複用</div>
+      </div>
+    </div>
+
+    <h3>Token 消耗對照</h3>
+    <table class="compare-table">
+      <thead>
+        <tr><th>使用場景</th><th>傳統做法</th><th>新框架</th><th>節省</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>簡單問答</td><td>~50K tokens</td><td>~4K tokens</td><td class="positive">↓ 92%</td></tr>
+        <tr><td>精確查詢</td><td>~50K tokens</td><td>~14K tokens</td><td class="positive">↓ 72%</td></tr>
+        <tr><td>報告產出</td><td>~50K tokens</td><td>~25K tokens</td><td class="positive">↓ 50%</td></tr>
+      </tbody>
+    </table>
+
+    <h3>間接效益</h3>
+    <div class="card-grid cols-2">
+      <div class="card">
+        <div class="card-title">知識保存與傳承</div>
+        <div class="card-body">組織知識不再只存在於少數人的腦中或散落的檔案裡。結構化後的知識庫本身就是一份高品質的組織知識地圖，新進同仁可以直接參考。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">AI 回答品質可追溯</div>
+        <div class="card-body">每個回答都標註引用來源（文件 ID），可以追溯 AI 的回答依據。不再是「AI 說的」，而是「依據 OPS-003 的流程規範」。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4. ROLLOUT ==================== -->
+<section>
+  <div class="container">
+    <span class="section-label">推廣策略</span>
+    <h2>從 OMO 驗證到跨單位複製</h2>
+    <p>整套框架設計為「一次驗證、可複製推廣」的模式。OMO 先跑通，其他單位只需要替換領域內容，不需要重新設計架構。</p>
+
+    <h3>推廣路徑</h3>
+    <div class="flow">
+      <span class="flow-step f-amber">OMO 試點驗證</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step f-teal">產出標準範本</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step f-purple">其他單位複製</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step f-amber">跨單位知識互通</span>
+    </div>
+
+    <div class="card-grid cols-2">
+      <div class="card accent-bg">
+        <div class="card-title">對其他單位的價值</div>
+        <div class="card-body">每個單位都有自己的術語、流程、文件。本框架的三層架構是通用的——只要替換 L0 術語表和 L1/L2 的領域內容，同樣的 Token 節省和品質提升就能在新單位重現。</div>
+      </div>
+      <div class="card teal-bg">
+        <div class="card-title">推廣門檻低</div>
+        <div class="card-body">完整的 XML 指令集 + 空白模板 + 操作指南已備妥。新單位不需要技術背景，只需要一位了解業務的同仁負責文件收錄，Claude 會自動執行品質檢查和迭代優化。</div>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <p><strong>關鍵優勢：</strong>當多個單位都採用相同架構時，未來有機會實現跨單位的知識互通——A 單位的 Claude 可以參考 B 單位的 L1 知識卡，減少跨部門溝通的資訊落差。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5. OPTIMIZATION ==================== -->
+<section>
+  <div class="container">
+    <span class="section-label">持續優化</span>
+    <h2>內建的自我進化機制</h2>
+    <p>這不是一個做完就放著的系統。框架內建了三個持續優化的閉環，讓知識庫越用越精準。</p>
+
+    <div class="card-grid cols-3">
+      <div class="card">
+        <div class="card-title">閉環 1：收錄即驗證</div>
+        <div class="card-body">每收錄 5 份文件，自動執行品質檢查並記錄指標。L1 知識卡的覆蓋率、術語表完整度、交叉引用正確性都有量化追蹤。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">閉環 2：缺口即收錄</div>
+        <div class="card-body">Claude 在回答問題時如果發現知識缺口，會主動標記「缺少 XXX 資訊」。這些標記匯集後，就是下一批收錄的優先清單。</div>
+      </div>
+      <div class="card">
+        <div class="card-title">閉環 3：使用即優化</div>
+        <div class="card-body">高頻被問到的問題會回饋到 L1 的 Q&A 區塊，下次同樣的問題就能用更少的 Token 更快回答。知識庫會自然地向「最有價值的方向」濃縮。</div>
+      </div>
+    </div>
+
+    <h3>迭代收斂流程</h3>
+
+    <div class="timeline">
+      <div class="timeline-item done">
+        <div class="tl-title">第 1-2 輪：校準期</div>
+        <div class="tl-body">收錄前 10 份文件，確認 L0/L1/L2 的分層是否合理、術語表是否完整。預期會有較多調整。</div>
+      </div>
+      <div class="timeline-item done">
+        <div class="tl-title">第 3-4 輪：穩定期</div>
+        <div class="tl-body">收錄流程趨於穩定，L1 覆蓋率達到 4/5 以上。開始有團隊成員能獨立操作。</div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-title">第 5 輪以後：收斂與維運</div>
+        <div class="tl-body">品質指標連續達標，框架收斂。轉入日常維運模式——新文件即時收錄，每月審閱一次 L1 知識卡。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== IMPLEMENTATION DETAIL ==================== -->
+<section>
+  <div class="container">
+    <span class="section-label">實施細節</span>
+    <h2>具體怎麼做？從哪裡開始？</h2>
+    <p>以下是完整的實作步驟。每一步都有明確的輸入、操作和產出，任何了解業務的同仁都能按照這個流程獨立執行。</p>
+
+    <!-- Step 0 -->
+    <div class="step-block">
+      <div class="step-header">
+        <span class="step-num">0</span>
+        <span class="step-title">環境準備：建立 Claude 專案</span>
+        <span class="step-meta">30 分鐘 · 一次性</span>
+      </div>
+      <div class="step-body">
+        <p>在公司的 Claude 平台上建立一個專屬 Project，作為知識庫的「家」。所有收錄的知識都會存放在這裡，團隊成員共用同一個 Project。</p>
+        <div class="substep">
+          <span class="substep-marker">0-1</span>
+          <div class="substep-content">建立新的 Claude Project，命名為 <strong>「OMO 知識助手」</strong>（或你們偏好的名稱）</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">0-2</span>
+          <div class="substep-content">將 <strong>XML 指令集</strong>（已備妥）貼入 Project 的 Custom Instructions。這是 Claude 的「行為說明書」，告訴它如何處理文件、怎麼分層、品質標準是什麼</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">0-3</span>
+          <div class="substep-content">將三份空白模板上傳為 Project Knowledge：<strong>L0_index.md</strong>（知識索引）、<strong>L1_tech_card.md</strong>（技術知識卡）、<strong>L1_ops_card.md</strong>（營運知識卡）、<strong>L1_mgmt_card.md</strong>（管理知識卡）</div>
+        </div>
+        <div class="highlight">
+          <p><strong>完成標誌：</strong>開一個新對話，對 Claude 說「請展示目前的知識索引」，它會回覆一份空的索引結構——代表環境就緒。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-block">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <span class="step-title">第一份文件：組織縮寫與架構表</span>
+        <span class="step-meta">1 小時 · 建議第一天</span>
+      </div>
+      <div class="step-body">
+        <p>刻意選擇「組織縮寫表」作為第一份收錄文件，因為它會被提升到 L0 常駐層，之後所有對話都受益。這是投資報酬率最高的起點。</p>
+        <div class="substep">
+          <span class="substep-marker">1-1</span>
+          <div class="substep-content">上傳組織縮寫/架構文件到對話中</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">1-2</span>
+          <div class="substep-content">對 Claude 說：</div>
+        </div>
+        <div class="code-example">
+          <span class="comment">── 操作指令（直接複製貼上即可）──</span><br><br>
+          <span class="hl">請按照 ingestion_protocol 收錄這份文件。</span><br>
+          這是組織架構與縮寫對照表，請特別注意：<br>
+          1. 執行 L0 提升測試，將高頻術語收入常駐術語表<br>
+          2. 如果有組織架構圖，請轉為文字描述
+        </div>
+        <div class="substep">
+          <span class="substep-marker">1-3</span>
+          <div class="substep-content">Claude 會自動執行：萃取內容 → 判斷哪些術語該進 L0 → 產出 L2 完整萃取 → 更新 L0 索引和術語表。<strong>你只需要檢查它的產出是否正確</strong>（縮寫有沒有對、架構有沒有漏）</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">1-4</span>
+          <div class="substep-content">確認無誤後，將 Claude 產出的更新版 <strong>L0_index.md</strong> 替換 Project Knowledge 中的舊版</div>
+        </div>
+        <div class="highlight">
+          <p><strong>完成標誌：</strong>開一個新對話，隨意用幾個部門縮寫問問題，Claude 應該能自動使用正確的全名回應。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-block">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <span class="step-title">收錄第二份：Modem 開發流程 (Project Milestone)</span>
+        <span class="step-meta">2-3 小時 · 建議第一週內</span>
+      </div>
+      <div class="step-body">
+        <p>這份文件是框架的真正壓力測試——它包含流程圖（需轉 Mermaid）、多階段定義（需結構化）、可能還有圖表（需文字描述）。成功處理這份，代表框架能應對最複雜的文件類型。</p>
+        <div class="substep">
+          <span class="substep-marker">2-1</span>
+          <div class="substep-content">上傳 Milestone 文件，對 Claude 說：</div>
+        </div>
+        <div class="code-example">
+          <span class="hl">請按照 ingestion_protocol 收錄這份文件。</span><br>
+          這是 Modem 產品的技術開發流程 (Project Milestone)，請特別注意：<br>
+          1. 所有流程圖請轉為 Mermaid 語法<br>
+          2. Milestone 各階段的定義請完整保留<br>
+          3. 圖表中的數據請重建為表格
+        </div>
+        <div class="substep">
+          <span class="substep-marker">2-2</span>
+          <div class="substep-content">Claude 會產出 <strong>L2 完整萃取</strong>（含 Mermaid 流程圖）。你需要驗證：流程圖的節點和連線是否正確、每個 Milestone 的定義是否完整、有沒有遺漏重要資訊</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">2-3</span>
+          <div class="substep-content">Claude 會同步更新 <strong>L1 技術知識卡</strong>，加入流程摘要和高頻 Q&A。檢查 L1 的摘要是否抓到重點——如果你覺得「看 L1 就能回答大部分關於 Milestone 的問題」，就是成功的</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">2-4</span>
+          <div class="substep-content">確認後，更新 Project Knowledge 中的 L0、L1、並新增 L2 檔案</div>
+        </div>
+        <div class="highlight">
+          <p><strong>完成標誌：</strong>問 Claude 「MRD 到 MP 的主要 Milestone 有哪些？」——它應該能只用 L1 就正確回答。再問「CMP 階段的具體驗證項目有哪些？」——它應該會告訴你需要載入 L2。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-block">
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <span class="step-title">收錄第三份：組織介紹</span>
+        <span class="step-meta">1-2 小時</span>
+      </div>
+      <div class="step-body">
+        <p>完成三種不同類型的文件（查找型、流程型、背景型）收錄後，就涵蓋了 OMO 最常見的文件型態。此時你對框架的「手感」已經足夠做出初步判斷。</p>
+        <div class="substep">
+          <span class="substep-marker">3-1</span>
+          <div class="substep-content">同樣的流程：上傳 → 指示收錄 → 驗證產出 → 更新 Project Knowledge</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">3-2</span>
+          <div class="substep-content">這份完成後，執行 <strong>第一輪品質檢查</strong>：對 Claude 說「請執行一輪完整的 quality_gate 檢查」。它會自動檢查 L0/L1/L2 的完整度、交叉引用正確性，並回報結果</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-block">
+      <div class="step-header">
+        <span class="step-num">4</span>
+        <span class="step-title">驗證：用真實問題測試效果</span>
+        <span class="step-meta">2-3 小時 · 建議第二週</span>
+      </div>
+      <div class="step-body">
+        <p>收錄完前 3 份文件後，用團隊真正會問的問題來測試。這一步的目的不是「證明框架有效」，而是「找出框架哪裡需要調整」。</p>
+        <div class="substep">
+          <span class="substep-marker">4-1</span>
+          <div class="substep-content">列出 <strong>10 個團隊常見問題</strong>，涵蓋三種類型：通識（概念問答）、精確（需要具體數字）、產出（需要幫忙寫文件）</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">4-2</span>
+          <div class="substep-content"><strong>先用舊方法測一遍</strong>（手動貼文件給 Claude），記錄每題的準確度（1-5 分）和 Token 用量——這是「改善前的成績單」</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">4-3</span>
+          <div class="substep-content"><strong>再用新框架測一遍</strong>（讓 Claude 從 L0/L1/L2 調用知識），記錄同樣的指標</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">4-4</span>
+          <div class="substep-content">對照兩組數據，產出 <strong>驗證報告</strong>。如果三項指標（準確度、操作時間、Token 消耗）都有改善，就進入擴大收錄階段；如果某項未達標，針對性調整後再測一輪</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-block">
+      <div class="step-header">
+        <span class="step-num">5</span>
+        <span class="step-title">擴大收錄與團隊培訓</span>
+        <span class="step-meta">Week 3-4</span>
+      </div>
+      <div class="step-body">
+        <p>驗證通過後，分批收錄剩餘文件（每批 5 份），同步讓 1-2 位團隊成員學習操作。</p>
+        <div class="substep">
+          <span class="substep-marker">5-1</span>
+          <div class="substep-content">按優先級排序剩餘文件：<strong>高頻使用 → 跨部門引用 → 其他</strong>。不需要一次全部收錄，先處理最有價值的</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">5-2</span>
+          <div class="substep-content">培訓內容只需要三件事：怎麼上傳文件並指示 Claude 收錄、怎麼檢查產出是否正確、怎麼更新 Project Knowledge 檔案</div>
+        </div>
+        <div class="substep">
+          <span class="substep-marker">5-3</span>
+          <div class="substep-content">每 5 份文件收錄完畢，執行一輪品質檢查，記錄到迭代紀錄中，追蹤框架是否趨於穩定</div>
+        </div>
+      </div>
+    </div>
+
+    <h3>每一步的產出物一覽</h3>
+    <table class="compare-table">
+      <thead>
+        <tr><th>步驟</th><th>輸入</th><th>產出</th><th>存放位置</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Step 0</td><td>XML 指令集 + 空白模板</td><td>Claude Project 就緒</td><td>Claude 平台</td></tr>
+        <tr><td>Step 1</td><td>組織縮寫表</td><td>L0 術語表 + L0 索引</td><td>Project Knowledge</td></tr>
+        <tr><td>Step 2</td><td>Milestone 文件</td><td>L2 完整萃取 + L1 更新</td><td>Project Knowledge + local 資料夾</td></tr>
+        <tr><td>Step 3</td><td>組織介紹</td><td>L2 + L1 更新 + 品質報告</td><td>Project Knowledge + local 資料夾</td></tr>
+        <tr><td>Step 4</td><td>10 個測試問題</td><td>驗證報告（含量化對照）</td><td>local 資料夾 + wiki</td></tr>
+        <tr><td>Step 5</td><td>剩餘文件（分批）</td><td>完整知識庫 + 迭代紀錄</td><td>Project Knowledge + wiki</td></tr>
+      </tbody>
+    </table>
+
+    <h3>誰負責什麼</h3>
+    <div class="role-grid">
+      <div>任務</div><div>主要負責</div><div>支援 / 審閱</div>
+      <div>框架設計</div><div>技術副理（已完成）</div><div>—</div>
+      <div>文件收錄</div><div>技術副理 + 指定團隊成員</div><div>各文件的業務負責人（驗證正確性）</div>
+      <div>品質檢查</div><div>技術副理</div><div>Claude 自動執行，人工抽驗</div>
+      <div>成效報告</div><div>技術副理</div><div>副處長審閱</div>
+      <div>推廣至他單位</div><div>技術副理 + 副處長</div><div>其他單位對口窗口</div>
+    </div>
+
+    <h3>啟動前準備清單</h3>
+    <ul class="checklist">
+      <li>確認公司 Claude 平台可建立 Project 並上傳 Knowledge 檔案</li>
+      <li>準備好第一批 3 份文件（組織縮寫表、Milestone 文件、組織介紹）</li>
+      <li>XML 指令集已就緒（已備妥，可直接使用）</li>
+      <li>L0/L1 空白模板已就緒（已備妥，可直接使用）</li>
+      <li>列出 10 個團隊常見問題作為驗證測試集</li>
+      <li>指定 1 位團隊成員作為收錄協作者</li>
+    </ul>
+
+    <div class="highlight">
+      <p><strong>所有工具和規範已就位：</strong>三層知識架構設計、XML 自動化指令集、L0/L1/L2 格式模板、品質驗證評分表、迭代收斂機制。只要完成上方的準備清單，就可以立即啟動 Step 0。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="footer">
+  <div class="container">
+    <p class="sig">OMO/WPO AI 知識管理框架提案</p>
+    <p>提案人：OMO/WPO 技術副理｜2026 年 6 月</p>
+  </div>
+</footer>
+
+</body>
+</html>
