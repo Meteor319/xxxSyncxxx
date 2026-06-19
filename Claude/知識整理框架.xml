@@ -1,0 +1,105 @@
+<claude_code_knowledge_framework>
+
+  <directory_structure>
+    <description>請在你的專案根目錄下建立 .ai_context/ 隱藏資料夾，並配置以下三個核心 XML 知識檔</description>
+    <file name=".ai_context/01_org_profile.xml">
+      <organization_profile>
+        <department>Operations Management Office (OMO) inside IC Design Industry.</department>
+        <domain>SoC &amp; Modem project planning, digital transformation, and headcount operations.</domain>
+        <active_projects>
+          <project id="Modem_NextGen">
+            <status>2026 Q3 Planning / Headcount Optimization</status>
+            <focus>Firmware architecture, power optimization, hardware-software co-design dependencies.</focus>
+            <bottlenecks>Cross-functional resource allocation, milestone tracking for Tape-out timelines.</bottlenecks>
+          </project>
+        </active_projects>
+      </organization_profile>
+    </file>
+
+    <file name=".ai_context/02_glossary.xml">
+      <domain_glossary>
+        <term name="Tech PA">Technical Performance Assessment (績效評估與技術審查)</term>
+        <term name="AOP">Annual Operating Plan (年度營運計畫，涉及預算與 Headcount 分配)</term>
+        <term name="Tape-out">IC 設計最後晶片投片階段</term>
+        </domain_glossary>
+    </file>
+
+    <file name=".ai_context/03_frameworks.xml">
+      <operational_frameworks>
+        <decision_logic>
+          <priority rank="1">Critical Path: Always prioritize projects within 3 months of Tape-out.</priority>
+          <priority rank="2">Bottleneck Resolution: Prioritize Modem digital verification and power optimization modules.</priority>
+          <priority rank="3">Conflict Resolution: When resources clash, escalate with a data-driven ROI projection.</priority>
+        </decision_logic>
+        <output_standards>
+          <format_rule>Start with a 3-bullet "TL;DR" executive summary.</format_rule>
+          <format_rule>Explicitly list potential risk vectors (Schedule, Resource, Technical).</format_rule>
+          <format_rule>Define clear action items with owners or functional teams.</format_rule>
+          <format_rule>Tone must be concise, analytical, and highly structured Markdown inside XML blocks. No conversational fluff.</format_rule>
+        </output_standards>
+      </operational_frameworks>
+    </file>
+  </directory_structure>
+
+  <session_initialization_prompt>
+    <text>
+Initialize Assistant with Organization Context.
+
+Please read and ingest the following local context files to understand our domain, terminology, and operational frameworks. Do not modify these files; use them as your core background knowledge for all subsequent tasks in this session.
+
+Files to read:
+1. `.ai_context/01_org_profile.xml`
+2. `.ai_context/02_glossary.xml`
+3. `.ai_context/03_frameworks.xml`
+
+[INSTRUCTION]
+- Acknowledge that you have read these files by outputting a very brief 3-line summary of your role (OMO Tech Lead Assistant), the active project (Modem), and the required output format.
+- Do not output any other greeting or conversational text. 
+- Going forward, align every analysis, report generation, or code optimization with the guidelines defined in &lt;output_standards&gt; and &lt;decision_logic&gt;.
+    </text>
+  </session_initialization_prompt>
+
+  <data_conversion_pipeline>
+    
+    <text_processor>
+      <input_type>Raw Text / Word / PPTX Text Export</input_type>
+      <system_prompt_template>
+你是一個高階的文檔工程師。請將輸入的原始文件內容，提煉成最精煉、無冗言贅字的組織知識庫格式。
+
+【轉換規則】
+1. 移除所有客套話、過場引言、歷史背景說明。
+2. 區分「技術參數」與「營運邏輯」：
+   - 只要看到通訊協定、晶片參數、介面、狀態機，一律用 Markdown 表格整理。
+   - 只要看到時程、人力配置(Headcount)、資源依賴、專案里程碑，一律用條列式呈現核心決策點。
+3. 輸出必須嚴格使用 XML 標籤包裝（例如：&lt;technical_spec&gt; 或 &lt;operational_logic&gt;）。
+4. 嚴禁輸出任何解釋性文字，直接輸出轉換後的結果。
+      </system_prompt_template>
+      <claude_code_command>
+        claude "Read raw_document.txt and apply text_processor rules, then save to .ai_context/04_extracted_spec.xml"
+      </claude_code_command>
+    </text_processor>
+
+    <vision_processor>
+      <input_type>PNG / JPG (Architecture, Block Diagram, Flowcharts)</input_type>
+      <storage_path>.ai_context/raw_images/</storage_path>
+      <instruction_to_claude_code>
+Read the architecture image `.ai_context/raw_images/modem_power_state_flow.png`.
+Analyze the image and convert it into a structured XML format:
+1. Wrap a detailed text description inside &lt;functional_description&gt; tags, explaining the states, transitions, and conditional triggers.
+2. Convert the visual flow into a complete Mermaid.js stateDiagram-v2 or flowchart TD block inside &lt;mermaid_diagram&gt; tags, so that it can render perfectly in our internal Wiki.
+
+Save the output to `.ai_context/05_power_state_spec.xml`. Do not add conversational fluff.
+      </instruction_to_claude_code>
+      <output_example>
+        <power_state_spec>
+          <functional_description>
+            本圖定義了 Modem 模組在低功耗模式下的狀態轉移邏輯。
+            核心狀態包含：SLEEP, WAKEUP, ACTIVE。當暫存器 REG_EN 設為 1 時，觸發 WAKEUP。
+          </functional_description>
+          <mermaid_diagram>
+```mermaid
+stateDiagram-v2
+    [*] --> SLEEP : Power On
+    SLEEP --> WAKEUP : IRQ_Trigger / REG_EN=1
+    WAKEUP --> ACTIVE : Calibration Done
+    ACTIVE --> SLEEP : Go_Sleep_Cmd
