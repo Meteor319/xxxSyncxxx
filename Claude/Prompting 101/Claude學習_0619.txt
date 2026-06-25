@@ -1,0 +1,25 @@
+
+
+
+# Claude 作Slides的影片
+- https://www.youtube.com/watch?v=7xlQkLXeR6Q
+- # CLAUDE: 生成簡報能正常顯示的中文字體, 只有**思源**系列一套
+
+Anthropic skills GitHub：https://github.com/anthropics/skills
+思源黑體下載：https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbXpOR1lRVTNyTzlVTWFxaEJvMzUySHdrekN3Z3xBQ3Jtc0tseWFhS2UybEhmTHpWdXY3M09iVExudVg4UG9aSS1aWGdPaWc0bDdGREU4WmJUVXctNS03clktbTkzNUpaSlhHY21aM1R4T3hHRFdsMms2RmdtS1BQcjVWb0diOWpTZDNEcHQtSElUMUs3SGVCLTFPbw&q=https%3A%2F%2Fgithub.com%2Fadobe-fonts%2Fsource-han-sans%2Fblob%2Fmaster%2FREADME-TW.md&v=7xlQkLXeR6Q
+思源宋體下載：https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbUZ0ZFF2OTA4MVV2QWFMeUJUcXVrQTlaVThNZ3xBQ3Jtc0tsRFdCMkJYZEpvQ0RPR1VOenhyZjJfQ29aTG44LVJwbXFvRU5ySFBoVThXMlRwR3YwY1lnMW9JbldlYWxNVnFVS0NpaDJiMlRvZEt6MUZNSW9NUWtIczZFOERsODRMTjFlb1FMTkthS1hibHo1dE93aw&q=https%3A%2F%2Fsource.typekit.com%2Fsource-han-serif%2Ftw%2F%23get-the-fonts&v=7xlQkLXeR6Q
+10 套配色快速查表：https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqa1RtQW4tN0s0bnlSUWJaV2lsa3RVcXhpLTBzUXxBQ3Jtc0ttYXhwa0JTRERTV01KbWdrNV9BMmNiV1NrSmU5STBBUzZhc2tXOTdSSTRKakVEbW5HdzBtbmQtUTdBUVVUOXB0LWxlSkpQdFZGUE1sQTVqMS0zVTBDYnhxc3JFYWZhc3lScVFoM1h2Y3RPVXIwa19Xcw&q=https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2F1J1vsNgzhSyVQtBTGiu9WCB2OpA8-xBiJ%2Fview%3Fusp%3Dsharing&v=7xlQkLXeR6Q
+三組中英文字型搭配實測 ：https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbFFhN1gwLXU3Z3hOQW9rRnRXaG11MkQ4YTVkQXxBQ3Jtc0ttRzRxVE5icmxwVTAwVUlxTy1DVzlldkRJS0dtWF9KY1ZramlybFFla00yLTdXZlVLdUVNRjM2eVhGNEtZNWJ1ei1HVkZGMEN1UHQxdl9WMjVDVVptazQ4QklFZ0VQaUZQNC0xaHhBRzd4QmNqY2ExMA&q=https%3A%2F%2Fdrive.google.com%2Fdrive%2Ffolders%2F1SY1VcpOfnqf-rtxJhj1H1J9AVMrUgUFJ%3Fusp%3Dsharing&v=7xlQkLXeR6Q
+
+# 自己公司的PPTX模板; 拖拉到Claude視窗, 下prompt
+- 也可以是自己做過, 滿意的PPT
+# Step_1:
+```先分析這個模板的版型, 告訴我有哪些layout可以用
+```
+
+# Step_2:
+```請針對這個模板生成一個skill, 內容包含:
+1.套用內容時, 如果版型有多餘的版位(例如團隊成員欄位用不到), 整個刪掉, 不要只清空文字
+2.如果文字長度跟原本設計的差太多, 自動濃縮配合版型, 不要讓文字爆出來
+3.所有中文段落字型統一指定成思源黑體(Noto Sans TC), 英文字型保留不要動
+```
