@@ -1,0 +1,173 @@
+# HC AOP 08/10
+
+
+# 08/11 To Do:
+1.整理資料HC AOP 脈絡
+2.計算WTG HC水位趨勢
+3.Clare 期待整理
+4.展開RAS Q3 Project list
+5.準備檔案格式與Claude Prompt
+
+6.檢查過去有什麼需要注意的事情, wiki上的HC AOP, 需要整理出流程
+
+
+
+
+# To do
+- 先分層次思考做出MVP, 資訊分流管理, 用AI讀入與梳理
+- Clare期待
+- 現有roadmap整理
+
+
+
+# 今年要詳細記錄整理流程, 目標是達到可以反查, AI協作, 完整記錄內外部事件
+# 今年一定要建立完整框架, 且可以追蹤, 多用AI 處理
+# (self) 先快速產出第一版預估結果, 讓Clare審查, 把注意力放在新的且無法參考的Project上
+
+
+
+# 參與角色: EO, BU coord, FIN, HR, FU coord
+
+
+
+# EO Timeline
+
+
+# Project Roadmap
+
+
+# WPO Framework
+
+1.Internal:
+- Modem Roadmap
+- Project Roadmap
+- 對應 RAS Project List
+- 同步 討論 M Time需要新增的項目
+- 現況: Y26Q2 vs Delta, Y26Q3 est, Y26Q4 est
+- 預估: Y27Q1~Y27Q4
+
+- DSOT 去年的預估型式
+- 發出去請主管預估的Format與負責的主管
+- 外單位填入TECH_WIRELESS(MODEM)人數: MCD/CTD/CD2, RSS
+
+
+- Clare預估的前置作業
+-- 參考格式準備
+-- 計算用小檔案
+-- Rationale複習: Y26, Y25
+-- 模擬分攤
+
+- 外部資訊紀錄
+
+2.水位人數
+- 依照08/03計算年底人數, 參考上一次Clare會議討論方式計算, 需要納入2027 Campus人數
+- 組織改組回補
+
+
+# 交付項目:
+1.Tech HC預估值:
+2.Product HC預估值:
+
+
+3.Data Flow:
+- Modem Roadmap(SSA project milestone) -> Project List(RAS Q2, Q3) -> WTG Asuumption(Clare Input: 客戶動向, 時程規劃) -> 預估Logic & Rationale -> 初版結果
+-> 微調
+
+- 微調:
+-- 1.總人數
+-- 2.Gen(H1/H2/H3)平衡
+-- 3.BU分攤總數平衡(#分攤比例假設)
+-- 4.BU Top Down總數限制
+
+
+
+# M Time資料應用方式
+- 需要發想
+
+
+4.Data
+
+- Modem Roadmap開案計畫:
+-- Y26: 看到28P, 28M, DX8; 但沒有看到6G RF & Baseband project
+-- Y27: 假設會看到DX9, 奇數年是小年, 29E
+
+
+- Modem技術特性
+-- 6G, 3GPP時程
+-- Project Spec假設, R18, R19
+
+
+- BU Roadmap
+-- BU開案規劃
+-- 技術亮點
+-- 客戶動向(Alpha客戶動向, MP時間是否提前)
+-- Titan Support Effort(Tablet, 27P+ FE phone, Caymus MT6817)
+-- Common, _SP, _Tablet的預估方式
+
+
+- Project List
+-- RAS Q2當作draft
+-- 預想Q3 delta: 
+---- NR NTN GEN, VIGOR
+---- Caymus, MT6817
+---- 27P+ Titan Support Effort
+---- Baseband Modem Gen101/DX10, T2000
+-- EOL project
+
+
+# 難處: 如何leverage 過去2年的預估邏輯與調整差異?
+- 紀錄Rationale與roadmap, 可反查與追蹤
+
+
+# 工作表格設計與格式設定
+- 沿用過去的表格
+- Claude設計: excel or WEB
+- Claude全計算
+
+
+# 如果Claude要修改之前設定的參數或是計算公式?
+- Rationale改變: 技術, 市場, 客戶, 資源配置
+
+
+# Data Flow:
+- 產出表格
+-- 總表: L2, L3, H Tag Summary, 填格子
+
+- 工作表格(總覽)
+-- 大表
+-- 需要把模擬BU分攤計算的公式也做進去
+
+
+- 計算表格(細算)
+-- 發想: 如何有效整理active的Project data & milestone搭配
+-- 多個: 主要用RAS人數與Project milestone為主
+-- 過去的計算公式與Rationale
+-- PPT筆記
+-- 2024 word筆記
+-- 2025 (V0.8, v0.85, v0.9)差異
+-- 總人數調整的Rationale
+-- 計算logic & Rationale: Y2025, Y2026; 兩種版本的演進
+
+
+- 主管調查回饋表格
+-- 哪些Project/Owner
+-- 資料內容
+-- DSOT
+-- 請Claude列出來
+
+
+
+# 下一步:
+- Claude做的結果要如何leverage?
+1.Carl作法: 全部交給AI做, 包含設計, 計算, 驗證
+2.過去作法: 手動算完提出討論
+
+- 定義整理format與資料的框架(討論with Claude)
+1.優化的方向
+2.建議
+3.建立知識庫
+4.如何重覆執行
+
+
+
+
